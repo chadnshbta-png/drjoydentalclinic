@@ -6,9 +6,15 @@ import { View } from "@react-three/drei";
 /**
  * One WebGL context for the entire experience. Every vignette portals its
  * scene here through drei's <View>; offscreen views are culled automatically,
- * so at most one vignette pays for rendering at any moment.
+ * so at most one vignette pays for rendering at any moment. The whole render
+ * loop is additionally paused (`frameloop="never"`) while the Craft chapter is
+ * off screen, so it costs nothing during the rest of the journey.
  */
-export default function CraftCanvas() {
+export default function CraftCanvas({
+  frameloop = "always",
+}: {
+  frameloop?: "always" | "never";
+}) {
   return (
     <Canvas
       style={{
@@ -18,6 +24,7 @@ export default function CraftCanvas() {
         pointerEvents: "none",
       }}
       dpr={[1, 1.75]}
+      frameloop={frameloop}
       gl={{
         antialias: true,
         alpha: true,

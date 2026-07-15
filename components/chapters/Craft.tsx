@@ -24,6 +24,7 @@ export default function Craft() {
   const rootRef = useRef<HTMLElement>(null);
   const [quality, setQuality] = useState(2);
   const [webgl, setWebgl] = useState(true);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     if (window.innerWidth < 900 || navigator.hardwareConcurrency <= 4)
@@ -34,6 +35,17 @@ export default function Craft() {
     } catch {
       setWebgl(false);
     }
+  }, []);
+
+  // Only run the shared WebGL loop while the Craft chapter is near the viewport.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), {
+      rootMargin: "400px 0px 400px 0px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   useGSAP(
@@ -152,7 +164,7 @@ export default function Craft() {
 
       <ServiceTree />
 
-      {webgl && <CraftCanvas />}
+      {webgl && <CraftCanvas frameloop={active ? "always" : "never"} />}
     </section>
   );
 }

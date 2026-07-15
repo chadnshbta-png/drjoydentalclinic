@@ -91,7 +91,7 @@ export default function Legacy() {
         {/* the image, grown from inside the words */}
         <div className={styles.imgWrap}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/atelier.png" alt="A clear aligner presented under atelier light" />
+          <img src="/images/atelier.png" alt="A clear aligner presented under atelier light" decoding="async" />
           <span className={styles.imgSheen} aria-hidden="true" />
         </div>
 

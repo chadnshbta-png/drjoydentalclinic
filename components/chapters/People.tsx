@@ -136,7 +136,7 @@ export default function People() {
             <figure className={styles.medallion}>
               <span className={styles.medRing} aria-hidden="true" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo/img-logo-png-192x.png" alt="Dr Joy Dental Clinic" className="logo-gold" />
+              <img src="/logo/img-logo-png-192x.png" alt="Dr Joy Dental Clinic" className="logo-gold" loading="lazy" decoding="async" />
               <figcaption>Founder · Dr Joy Dental Clinics</figcaption>
             </figure>
           </div>

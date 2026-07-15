@@ -86,7 +86,7 @@ export default function Places() {
             <article key={c.name} className={styles.panel}>
               <div className={styles.photo}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={c.image} alt={c.name} loading="lazy" />
+                <img src={c.image} alt={c.name} loading="lazy" decoding="async" />
                 <span className={styles.index}>
                   {String(i + 1).padStart(2, "0")}
                 </span>

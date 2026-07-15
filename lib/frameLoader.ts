@@ -5,13 +5,16 @@ import { FRAME_COUNT, frameSrc } from "./content";
 export type Frame = ImageBitmap | HTMLImageElement;
 
 /**
- * Preloads and decodes the 480-frame hero film.
+ * Preloads and decodes the hero film.
  *
  * Strategy: the first PRIORITY frames are fetched before the curtain lifts so
  * playback can never outrun the loader on the opening scroll; the remainder
  * streams in behind with bounded concurrency. Frames decode via
  * createImageBitmap (off the main thread where supported) so scrubbing never
- * hitches on decode.
+ * hitches on decode, and each decoded frame is kept in memory for the life of
+ * the page so it is never fetched or decoded twice. Network requests use the
+ * HTTP cache (force-cache) so, paired with the immutable Cache-Control header,
+ * repeat visits serve every frame straight from disk.
  */
 const PRIORITY = 80;
 const CONCURRENCY = 8;
@@ -52,7 +55,7 @@ class FilmLoader {
 
   private async fetchFrame(i: number): Promise<Frame> {
     if ("createImageBitmap" in window) {
-      const res = await fetch(frameSrc(i));
+      const res = await fetch(frameSrc(i), { cache: "force-cache" });
       if (!res.ok) throw new Error(`frame ${i}: ${res.status}`);
       const blob = await res.blob();
       return createImageBitmap(blob);

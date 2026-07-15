@@ -177,6 +177,8 @@ export default function Finale() {
                 alt="Dr Joy Dental Clinic"
                 width={230}
                 height={69}
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <p className={`${styles.creditLine} ${styles.tag}`}>
