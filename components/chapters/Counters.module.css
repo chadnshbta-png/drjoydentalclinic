@@ -1,0 +1,109 @@
+.counters {
+  position: relative;
+  /* a light lip so the dark ledger emerges from the Smile Design studio,
+     then carries down into the booking chapter */
+  background:
+    linear-gradient(var(--ivory) 0%, transparent 9%),
+    linear-gradient(#14100b, var(--espresso) 42%);
+  color: rgba(254, 254, 254, 0.85);
+  padding: clamp(110px, 17vh, 210px) 0 clamp(80px, 13vh, 170px);
+  overflow: hidden;
+}
+
+.head {
+  margin-bottom: clamp(50px, 9vh, 110px);
+}
+
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.title {
+  margin-top: calc(var(--u) * 4);
+  font-size: clamp(1.8rem, 4vw, 3.4rem);
+  color: var(--ivory);
+  line-height: 1.14;
+}
+
+.title :global(.line-mask) > span {
+  display: block;
+  will-change: transform;
+}
+
+/* asymmetric, card-less numerals */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(20px, 3vw, 56px);
+  align-items: start;
+}
+
+.stat {
+  --fill: 0%;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 5);
+  transform: translateY(var(--lift, 0));
+  opacity: 0;
+  will-change: transform, opacity;
+  cursor: default;
+}
+
+/* the numeral fills bottom-to-top with liquid gold as you scroll */
+.num {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(3.4rem, 8vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: 0.005em;
+  background: linear-gradient(
+    0deg,
+    var(--gold-light) 0%,
+    var(--gold) var(--fill),
+    rgba(182, 154, 105, 0.16) var(--fill),
+    rgba(182, 154, 105, 0.16) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  transition: filter 0.5s;
+}
+
+.stat:hover .num {
+  filter: drop-shadow(0 0 26px rgba(214, 184, 130, 0.45));
+}
+
+.rule {
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+  transform-origin: left;
+  transition: width 0.6s var(--ease-lux);
+}
+
+.stat:hover .rule {
+  width: 84px;
+}
+
+.label {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(254, 254, 254, 0.6);
+  max-width: 18ch;
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(36px, 7vw, 56px);
+  }
+  .stat {
+    transform: none;
+  }
+}

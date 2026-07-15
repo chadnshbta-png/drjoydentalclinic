@@ -1,0 +1,119 @@
+{
+  "colorScheme": "light",
+  "fonts": [
+    {
+      "family": "Aureate",
+      "role": "heading"
+    },
+    {
+      "family": "Manrope",
+      "role": "body"
+    }
+  ],
+  "colors": {
+    "primary": "#AC8B51",
+    "secondary": "#957846",
+    "accent": "#B69A69",
+    "background": "#FEFEFE",
+    "textPrimary": "#B69A69",
+    "link": "#B69A69"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "Manrope",
+      "heading": "Aureate"
+    },
+    "fontStacks": {
+      "heading": [
+        "Aureate",
+        "serif"
+      ],
+      "body": [
+        "Manrope"
+      ],
+      "paragraph": [
+        "Manrope"
+      ]
+    },
+    "fontSizes": {
+      "h1": "31px",
+      "h2": "36px",
+      "body": "16px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 4,
+    "borderRadius": "3px"
+  },
+  "components": {
+    "input": {
+      "background": "transparent",
+      "textColor": "#FFFFFF",
+      "borderColor": null,
+      "borderRadius": "0px",
+      "borderRadiusCorners": {
+        "topLeft": "0px",
+        "topRight": "0px",
+        "bottomRight": "0px",
+        "bottomLeft": "0px"
+      },
+      "shadow": "none"
+    }
+  },
+  "images": {
+    "logo": "https://cdn-edmim.nitrocdn.com/WjbVVJRfpPRkRFdAXGwZpfxkgKHYfXHs/assets/images/optimized/rev-e46feec/drjoydentalclinic.com/wp-content/uploads/2026/03/img-logo-png-192x.png",
+    "favicon": "https://cdn-edmim.nitrocdn.com/WjbVVJRfpPRkRFdAXGwZpfxkgKHYfXHs/assets/images/optimized/rev-e46feec/drjoydentalclinic.com/wp-content/uploads/2026/03/cropped-img-fav-32x32.png",
+    "ogImage": "https://drjoydentalclinic.com/wp-content/uploads/2021/10/dr-joy-email-header.webp",
+    "logoHref": "https://drjoydentalclinic.com/",
+    "logoAlt": "Dr Joy Dental Clinic Logo"
+  },
+  "__llm_logo_reasoning": {
+    "selectedIndex": 0,
+    "reasoning": "Selected #0 because it is visible, medium-sized, and matches the brand name 'Dr Joy Dental Clinic'. It links to the homepage, making it the primary brand logo.",
+    "confidence": 0.95,
+    "source": "llm"
+  },
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": -1,
+      "text": "N/A",
+      "reasoning": "There is only one button detected, and it does not have a vibrant or brand color background. It is not suitable as a primary CTA."
+    },
+    "secondary": {
+      "index": -1,
+      "text": "N/A",
+      "reasoning": "There is only one button detected, and it does not qualify as a secondary CTA due to lack of differentiation from a primary button."
+    },
+    "confidence": 0.8
+  },
+  "personality": {
+    "tone": "professional",
+    "energy": "medium",
+    "targetAudience": "individuals seeking dental services in Dubai"
+  },
+  "designSystem": {
+    "framework": "custom",
+    "componentLibrary": ""
+  },
+  "confidence": {
+    "buttons": 0.8,
+    "colors": 0.9,
+    "overall": 0.8500000000000001
+  },
+  "__llm_metadata": {
+    "logoSelection": {
+      "llmCalled": true,
+      "llmSucceeded": true,
+      "finalSource": "llm",
+      "rawLogoSelection": {
+        "selectedLogoIndex": 0,
+        "selectedLogoReasoning": "Selected #0 because it is visible, medium-sized, and matches the brand name 'Dr Joy Dental Clinic'. It links to the homepage, making it the primary brand logo.",
+        "confidence": 0.95
+      }
+    },
+    "buttonClassification": {
+      "llmCalled": true,
+      "llmSucceeded": true
+    }
+  }
+}

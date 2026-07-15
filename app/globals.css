@@ -1,0 +1,348 @@
+/* ————————————————————————————————————————————————
+   Dr Joy Dental Clinics — "The Art of the Smile"
+   Design tokens sourced from /public/Branding.json
+   ———————————————————————————————————————————————— */
+
+:root {
+  /* Brand palette */
+  --gold: #ac8b51;
+  --gold-deep: #957846;
+  --gold-light: #b69a69;
+  --bg: #fefefe;
+  --ivory: #faf8f4;
+  --espresso: #17120d;
+  --espresso-soft: #241d15;
+  --ink: #2b2419; /* long-form reading tone, warm near-black */
+  --hairline: rgba(172, 139, 81, 0.28);
+
+  /* Rhythm — Branding.json: baseUnit 4, borderRadius 3px */
+  --u: 4px;
+  --radius: 3px;
+  --gutter: clamp(20px, 5vw, 72px);
+
+  /* Type */
+  --font-heading: var(--font-aureate), "Aureate", "Cormorant Garamond", serif;
+  --font-body: var(--font-manrope), "Manrope", system-ui, sans-serif;
+
+  /* Fluid display scale (body stays at brand 16px) */
+  --text-body: 16px;
+  --text-display: clamp(2.6rem, 7.2vw, 6.4rem);
+  --text-title: clamp(2rem, 4.6vw, 3.8rem);
+  --text-chapter: clamp(1.5rem, 2.6vw, 2.25rem);
+
+  --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: initial; /* Lenis owns scrolling */
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.7;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  color: var(--gold-deep);
+  line-height: 1.08;
+  letter-spacing: 0.01em;
+}
+
+a {
+  color: var(--gold-light);
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+/* ——— shared primitives ——— */
+
+.chapter {
+  position: relative;
+}
+
+.container {
+  width: min(1280px, 100% - var(--gutter) * 2);
+  margin-inline: auto;
+}
+
+/* Roman-numeral chapter marker */
+.chapter-mark {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.chapter-mark::after {
+  content: "";
+  height: 1px;
+  width: calc(var(--u) * 16);
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.gold-serif {
+  font-family: var(--font-heading);
+  color: var(--gold-deep);
+}
+
+/* Gold hairline button — the only button on earth */
+.btn-hairline {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 3);
+  padding: calc(var(--u) * 3.5) calc(var(--u) * 8);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  color: var(--gold-deep);
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.5s var(--ease-lux);
+}
+.btn-hairline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.55s var(--ease-lux);
+  z-index: -1;
+}
+.btn-hairline:hover {
+  color: var(--bg);
+}
+.btn-hairline:hover::before {
+  transform: scaleX(1);
+}
+.btn-hairline--light {
+  border-color: rgba(254, 254, 254, 0.4);
+  color: var(--ivory);
+}
+.btn-hairline--light:hover {
+  color: var(--espresso);
+}
+.btn-hairline--light::before {
+  background: var(--ivory);
+}
+
+/* Recolors the white+gold logo PNG to monochrome brand gold for light scenes */
+.logo-gold {
+  filter: brightness(0) saturate(100%) invert(58%) sepia(23%) saturate(760%)
+    hue-rotate(2deg) brightness(93%) contrast(88%);
+}
+
+/* Split-text helpers */
+.line-mask {
+  overflow: hidden;
+  display: block;
+}
+
+/* ——— clinician constellation (Chapter VI) ——— */
+.clinician-stage {
+  position: relative;
+  width: 100%;
+  height: min(80vh, 760px);
+  margin-top: clamp(20px, 4vh, 48px);
+}
+
+.clinician-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.clinician-hub {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 3;
+  padding-top: 40px;
+}
+
+.clinician-hub strong {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--gold-light);
+}
+
+.clinician-hub span {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(254, 254, 254, 0.55);
+  font-weight: 700;
+}
+
+.clinician-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(182, 154, 105, 0.28);
+  background: rgba(24, 18, 12, 0.62);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  z-index: 4;
+  text-align: left;
+  white-space: nowrap;
+  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, transform 0.4s var(--ease-lux);
+}
+
+.clinician-chip:hover,
+.clinician-chip.on {
+  border-color: var(--gold);
+  background: rgba(36, 27, 17, 0.86);
+  box-shadow: 0 0 40px -8px rgba(182, 154, 105, 0.4);
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.clinician-count {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--gold-light);
+  line-height: 1;
+}
+
+.clinician-name {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  font-weight: 700;
+}
+
+.clinician-lead {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(254, 254, 254, 0.45);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s var(--ease-lux), opacity 0.4s;
+}
+
+.clinician-chip:hover .clinician-lead,
+.clinician-chip.on .clinician-lead {
+  max-height: 20px;
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .clinician-stage {
+    height: min(90vh, 620px);
+  }
+  .clinician-chip {
+    padding: 7px 11px;
+  }
+  .clinician-name {
+    font-size: 9.5px;
+  }
+  .clinician-lead {
+    display: none;
+  }
+}
+
+/* ——— Smile Design floating choice labels (in-canvas) ——— */
+.smile-orb {
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(182, 154, 105, 0.32);
+  background: rgba(24, 18, 12, 0.55);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, transform 0.4s var(--ease-lux);
+}
+
+.smile-orb strong {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: var(--ivory);
+  line-height: 1;
+}
+
+.smile-orb span {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.smile-orb:hover,
+.smile-orb.on {
+  border-color: var(--gold);
+  background: rgba(36, 27, 17, 0.82);
+  box-shadow: 0 0 40px -8px rgba(182, 154, 105, 0.45);
+  transform: translateX(-50%) translateY(-3px);
+}
+
+/* Reduced motion: the story still reads, without the theatre */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

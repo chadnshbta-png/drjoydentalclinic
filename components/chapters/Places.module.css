@@ -1,0 +1,196 @@
+.stage {
+  min-height: 100vh;
+  min-height: 100svh;
+  /* a dark lip at the top so ivory rises out of the Stories room */
+  background: linear-gradient(#100c08 0%, var(--ivory) 6%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  /* keep the travelling panels clear of the heading and constellation */
+  padding-top: clamp(120px, 19vh, 200px);
+  padding-bottom: clamp(60px, 11vh, 110px);
+}
+
+.heading {
+  position: absolute;
+  top: clamp(70px, 11vh, 130px);
+  left: var(--gutter);
+  right: var(--gutter);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--u) * 4);
+}
+
+.heading h2 {
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
+  color: var(--ink);
+}
+
+.constellation {
+  position: absolute;
+  bottom: clamp(28px, 5vh, 56px);
+  left: var(--gutter);
+  z-index: 3;
+  display: flex;
+  gap: calc(var(--u) * 2.5);
+  align-items: center;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(172, 139, 81, 0.25);
+  transition: background 0.4s, transform 0.4s;
+}
+
+.dotOn {
+  background: var(--gold);
+  transform: scale(1.25);
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  padding: 0 var(--gutter);
+  will-change: transform;
+}
+
+.panel {
+  flex: 0 0 auto;
+  width: min(clamp(300px, 46vw, 620px), 82vw);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 5);
+}
+
+/* photo height capped so panel + info always fit the cleared stage */
+.photo {
+  max-height: 52vh;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.photo img {
+  width: 114%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+.index {
+  position: absolute;
+  top: calc(var(--u) * 4);
+  left: calc(var(--u) * 4);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  color: var(--bg);
+  background: rgba(23, 18, 13, 0.35);
+  backdrop-filter: blur(8px);
+  padding: calc(var(--u) * 1.5) calc(var(--u) * 3);
+  border-radius: var(--radius);
+}
+
+.info h3 {
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  color: var(--gold-deep);
+}
+
+.address {
+  margin-top: calc(var(--u) * 2);
+  font-size: 14px;
+  opacity: 0.75;
+  max-width: 52ch;
+}
+
+.infoRow {
+  margin-top: calc(var(--u) * 4);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+}
+
+.directions {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gold-deep);
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.directions::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--gold);
+  transform: scaleX(0.35);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease-lux);
+}
+
+.directions:hover::after {
+  transform: scaleX(1);
+}
+
+.phone {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  opacity: 0.75;
+}
+
+.finalPanel {
+  flex: 0 0 auto;
+  width: clamp(280px, 40vw, 560px);
+  display: grid;
+  place-items: center;
+}
+
+.finalPanel p {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+  color: var(--gold-deep);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* touch layouts: native snap filmstrip */
+@media (max-width: 760px) {
+  .stage {
+    padding: 22vh 0 14vh;
+  }
+  .track {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+  .panel {
+    scroll-snap-align: center;
+    width: 82vw;
+  }
+  .constellation {
+    display: none;
+  }
+}

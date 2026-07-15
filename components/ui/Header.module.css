@@ -1,0 +1,234 @@
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 120;
+  padding: calc(var(--u) * 4) var(--gutter) 0;
+  pointer-events: none;
+}
+
+/* soft dark scrim so nav copy survives any film frame beneath */
+.bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  height: 150%;
+  background: linear-gradient(rgba(23, 18, 13, 0.32), rgba(23, 18, 13, 0));
+  pointer-events: none;
+}
+
+/* the glass frame */
+.glass {
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--u) * 2.5) calc(var(--u) * 5.5);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: calc(var(--radius) * 3);
+  background: linear-gradient(
+    118deg,
+    rgba(23, 18, 13, 0.34),
+    rgba(23, 18, 13, 0.16) 55%,
+    rgba(182, 154, 105, 0.12)
+  );
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 14px 40px -22px rgba(23, 18, 13, 0.5);
+  transition: background 0.6s, border-color 0.6s;
+}
+
+/* over the ivory chapter-index overlay the glass turns light */
+.glassOpen {
+  background: rgba(250, 248, 244, 0.6);
+  border-color: var(--hairline);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.brand {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+}
+
+.brand img {
+  width: clamp(104px, 11vw, 140px);
+  height: auto;
+  transition: filter 0.5s;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 7);
+}
+
+.phone {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  color: rgba(254, 254, 254, 0.92);
+  transition: color 0.5s;
+}
+
+.glassOpen .phone {
+  color: var(--gold-deep);
+}
+
+.menuBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 3);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: calc(var(--u) * 2.25) calc(var(--u) * 5);
+  cursor: pointer;
+  transition: background 0.45s, border-color 0.45s;
+}
+
+.menuBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.glassOpen .menuBtn {
+  background: rgba(172, 139, 81, 0.1);
+  border-color: var(--hairline);
+}
+
+.menuWord {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(254, 254, 254, 0.95);
+  transition: color 0.45s;
+}
+
+.glassOpen .menuWord {
+  color: var(--gold-deep);
+}
+
+.burger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 22px;
+}
+
+.burger i {
+  display: block;
+  height: 1px;
+  background: var(--gold-light);
+  transition: transform 0.45s var(--ease-lux);
+}
+
+.burgerX i:first-child {
+  transform: translateY(3px) rotate(45deg);
+}
+.burgerX i:last-child {
+  transform: translateY(-3px) rotate(-45deg);
+}
+
+/* ——— overlay ——— */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: var(--ivory);
+  clip-path: inset(0 0 100% 0);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--gutter);
+}
+
+.chapters {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 1vh, 10px);
+}
+
+.itemMask {
+  overflow: hidden;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 6);
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 6.4vh, 3.6rem);
+  color: var(--ink);
+  transition: color 0.4s, letter-spacing 0.6s var(--ease-lux);
+}
+
+.item em {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  font-weight: 700;
+  min-width: 34px;
+}
+
+.itemMask:hover .item {
+  color: var(--gold-deep);
+  letter-spacing: 0.04em;
+}
+
+.overlayFoot {
+  position: absolute;
+  bottom: calc(var(--u) * 8);
+  left: var(--gutter);
+  display: flex;
+  gap: calc(var(--u) * 3);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--gold-deep);
+}
+
+.overlayFoot a {
+  color: var(--gold-deep);
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* ——— timecode rail ——— */
+
+.rail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  z-index: 90;
+  background: rgba(172, 139, 81, 0.12);
+}
+
+.railFill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(var(--gold-light), var(--gold));
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+@media (max-width: 720px) {
+  .phone {
+    display: none;
+  }
+}

@@ -1,0 +1,269 @@
+.stories {
+  position: relative;
+  background: #14100b;
+  color: rgba(254, 254, 254, 0.9);
+}
+
+.stage {
+  position: relative;
+  min-height: 122vh;
+  overflow: hidden;
+  --px: 0;
+  --py: 0;
+  /* a light lip at the very top so the dark room dissolves in from Craft */
+  background:
+    linear-gradient(var(--bg) 0%, transparent 6%),
+    radial-gradient(120% 90% at 50% 0%, rgba(60, 47, 28, 0.55), transparent 60%),
+    #14100b;
+}
+
+/* huge ghost word behind the gallery */
+.ghost {
+  position: absolute;
+  right: 3vw;
+  bottom: -4vh;
+  font-family: var(--font-heading);
+  font-size: clamp(9rem, 26vw, 26rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(182, 154, 105, 0.12);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* intro — always lit, above the veil */
+.intro {
+  position: absolute;
+  top: clamp(88px, 14vh, 150px);
+  left: var(--gutter);
+  right: var(--gutter);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.mark {
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.introTitle {
+  margin-top: calc(var(--u) * 5);
+  font-size: clamp(1.9rem, 4vw, 3.4rem);
+  color: var(--ivory);
+  max-width: 16ch;
+  line-height: 1.16;
+}
+
+.introHint {
+  margin-top: calc(var(--u) * 5);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 3);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(254, 254, 254, 0.5);
+  font-weight: 600;
+}
+
+.introHint i {
+  width: calc(var(--u) * 12);
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+/* card positioning layer — drift + rotation + hover straighten (CSS only) */
+.cardPos {
+  position: absolute;
+  z-index: 5;
+  transform:
+    translate3d(
+      calc(var(--px, 0) * var(--depth) * -1px),
+      calc(var(--py, 0) * var(--depth) * -1px),
+      0
+    )
+    rotate(var(--rot))
+    scale(var(--sc, 1));
+  transition: transform 0.6s var(--ease-lux), z-index 0s;
+  will-change: transform;
+}
+
+.cardPos:hover,
+.cardPos:focus-within {
+  --rot: 0deg;
+  --sc: 1.06;
+  z-index: 30;
+}
+
+/* the framed story */
+.card {
+  position: relative;
+  padding: clamp(24px, 2.4vw, 40px);
+  border: 1px solid rgba(182, 154, 105, 0.28);
+  border-radius: calc(var(--radius) * 2);
+  background: linear-gradient(158deg, rgba(38, 30, 19, 0.94), rgba(22, 17, 11, 0.94));
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+  outline: none;
+  transition: border-color 0.5s, box-shadow 0.5s, filter 0.5s;
+  will-change: opacity, transform;
+}
+
+.cardPos:hover .card,
+.cardPos:focus-within .card {
+  border-color: var(--gold);
+  box-shadow:
+    0 50px 90px -34px rgba(0, 0, 0, 0.85),
+    0 0 60px -10px rgba(182, 154, 105, 0.25);
+}
+
+.quoteMark {
+  position: absolute;
+  top: 6px;
+  left: 16px;
+  font-family: var(--font-heading);
+  font-size: 4rem;
+  line-height: 1;
+  color: rgba(182, 154, 105, 0.35);
+  pointer-events: none;
+}
+
+.quote {
+  position: relative;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 1.35vw, 1.35rem);
+  line-height: 1.5;
+  color: rgba(254, 254, 254, 0.92);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: -webkit-line-clamp 0.4s;
+}
+
+.cardPos:hover .quote,
+.cardPos:focus-within .quote {
+  -webkit-line-clamp: 12;
+  line-clamp: 12;
+}
+
+.foot {
+  margin-top: calc(var(--u) * 5);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 3.5);
+  flex-wrap: wrap;
+}
+
+.rule {
+  width: calc(var(--u) * 8);
+  height: 1px;
+  background: var(--gold);
+}
+
+.name {
+  font-style: normal;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--gold-light);
+}
+
+.treatment {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(254, 254, 254, 0.5);
+  font-weight: 700;
+}
+
+/* the spotlight veil — pooled light around the cursor */
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 300px at var(--mx, 50%) var(--my, 40%),
+    transparent 0,
+    transparent 30%,
+    rgba(12, 9, 6, 0.5) 78%,
+    rgba(12, 9, 6, 0.66) 100%
+  );
+  transition: background 0.1s linear;
+}
+
+/* ——— insurers marquee (dark) ——— */
+
+.marquee {
+  overflow: hidden;
+  border-top: 1px solid rgba(182, 154, 105, 0.18);
+  border-bottom: 1px solid rgba(182, 154, 105, 0.18);
+  background: #100c08;
+  padding: calc(var(--u) * 5) 0;
+  position: relative;
+  z-index: 2;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  gap: calc(var(--u) * 10);
+  animation: glide 46s linear infinite;
+}
+
+.track span {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 10);
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.track i {
+  font-style: normal;
+  color: rgba(182, 154, 105, 0.5);
+  font-size: 9px;
+}
+
+@keyframes glide {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ——— touch / small screens: vertical stack, no spotlight ——— */
+@media (max-width: 860px) {
+  .stage {
+    padding: 24vh var(--gutter) 12vh;
+  }
+  .intro {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin-bottom: clamp(28px, 5vh, 48px);
+  }
+  .cardPos {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    transform: none !important;
+    margin-bottom: clamp(18px, 3vh, 28px);
+  }
+  .ghost,
+  .veil {
+    display: none;
+  }
+  .quote {
+    -webkit-line-clamp: 20;
+    line-clamp: 20;
+  }
+}
