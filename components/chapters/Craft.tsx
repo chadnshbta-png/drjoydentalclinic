@@ -38,11 +38,18 @@ export default function Craft() {
   }, []);
 
   // Only run the shared WebGL loop while the Craft chapter is near the viewport.
+  // The TOP margin is deliberately huge (a full viewport-plus): it starts the
+  // render loop while Chapter II (Legacy) is still in its quiet hold, so the
+  // one-off warm-up cost — env-map bake, geometry upload, first shader compiles
+  // — is paid *before* Legacy un-pins, not on the cut into this chapter. That
+  // first expensive WebGL frame was the scroll hitch; moving it earlier removes
+  // it. The generous bottom margin keeps the loop alive a beat past the chapter
+  // so a quick scroll-back never re-pays the warm-up.
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
     const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), {
-      rootMargin: "400px 0px 400px 0px",
+      rootMargin: "140% 0px 60% 0px",
     });
     io.observe(el);
     return () => io.disconnect();

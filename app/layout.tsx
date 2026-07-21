@@ -41,7 +41,7 @@ export const metadata: Metadata = {
       "Award-winning dental clinics in Dubai since 2004. 13 clinics, 100+ dentists, 700K+ smiles.",
     url: brand.site,
     siteName: brand.name,
-    images: [{ url: "/frame/frame (1).webp", width: 1280, height: 720 }],
+    images: [{ url: "/frame/farmes (1).webp", width: 1280, height: 720 }],
     locale: "en_US",
     type: "website",
   },

@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       { source: "/frame/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
       { source: "/location/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
       { source: "/images/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
+      { source: "/models/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
       {
         // The logo/favicon could conceivably change under the same name —
         // cache long but let it revalidate rather than lock it forever.

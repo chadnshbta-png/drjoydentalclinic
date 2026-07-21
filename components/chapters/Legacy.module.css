@@ -1,7 +1,8 @@
 .legacy {
   position: relative;
-  /* bridge the hero's warm greige into the ivory page — no hard seam */
-  background: linear-gradient(#e9e4db, var(--bg) 22%);
+  /* continue the hero's exact warm tone, then ease into the ivory page only
+     near the very bottom so it reads as one uninterrupted shot */
+  background: linear-gradient(#e9e4db 0%, #e9e4db 62%, var(--bg) 100%);
 }
 
 /* ——— the pinned reveal stage ——— */
@@ -15,6 +16,98 @@
   place-items: center;
 }
 
+/* ——— ambient life: two near-imperceptible layers behind the words ———
+   nothing new is *seen* — only the tone the hero left behind is kept alive:
+   a gradient that drifts, and a soft light that sweeps across the salon. */
+
+.ambient {
+  position: absolute;
+  /* kept modest (was -12%): a smaller layer is cheaper to composite, and the
+     drift is small enough that edges never show */
+  inset: -6%;
+  z-index: 1;
+  pointer-events: none;
+  /* a barely-there warm bloom that breathes very slowly, so the tone is
+     never perfectly flat */
+  background:
+    radial-gradient(60% 48% at 32% 34%, rgba(214, 196, 158, 0.28), transparent 70%),
+    radial-gradient(56% 46% at 70% 66%, rgba(198, 176, 140, 0.22), transparent 72%);
+  opacity: 0.9;
+  /* animation runs ONLY while .playing is present (added on enter, removed on
+     exit) so nothing composites once the section is scrolled past */
+  animation: legacyDrift 26s ease-in-out infinite alternate paused;
+}
+
+.sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  /* a wide, feathered band of warm light passing slowly across. A plain
+     low-opacity overlay in the warm palette — NO mix-blend-mode, which would
+     force the whole section into an expensive blend group every frame and is
+     the main cause of the exit hitch. Visually near-identical on this tone. */
+  background: linear-gradient(
+    100deg,
+    transparent 34%,
+    rgba(255, 250, 238, 0.5) 49%,
+    rgba(255, 250, 238, 0.58) 50%,
+    rgba(255, 250, 238, 0.5) 51%,
+    transparent 66%
+  );
+  opacity: 0;
+  animation: legacySweep 19s ease-in-out infinite paused;
+}
+
+/* only while the section is genuinely on-screen do the ambient layers animate;
+   .playing is toggled by an IntersectionObserver, and will-change is scoped
+   here so GPU layers are promoted only during that window, then released. */
+.playing .ambient {
+  will-change: transform;
+  animation-play-state: running;
+}
+
+.playing .sweep {
+  will-change: transform, opacity;
+  animation-play-state: running;
+}
+
+@keyframes legacyDrift {
+  0% {
+    transform: translate3d(-1.4%, -1%, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(1.6%, 1.2%, 0) scale(1.05);
+  }
+}
+
+@keyframes legacySweep {
+  0% {
+    transform: translate3d(-48%, 0, 0) skewX(-6deg);
+    opacity: 0;
+  }
+  42% {
+    opacity: 0.7;
+  }
+  58% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(48%, 0, 0) skewX(-6deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playing .ambient,
+  .playing .sweep {
+    animation: none;
+  }
+  .sweep {
+    opacity: 0;
+  }
+}
+
 .mark {
   position: absolute;
   top: clamp(84px, 13vh, 150px);
@@ -24,54 +117,23 @@
   z-index: 5;
 }
 
-/* the image that grows out of the words */
-.imgWrap {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  width: min(1120px, 90vw);
-  aspect-ratio: 16 / 9;
-  border-radius: calc(var(--radius) * 2);
-  overflow: hidden;
-  will-change: transform, opacity, filter;
-  box-shadow: 0 60px 120px -50px rgba(105, 82, 46, 0.6);
-  z-index: 2;
-}
-
-.imgWrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.imgSheen {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
-  pointer-events: none;
-}
-
-/* the words the image emerges from */
+/* the title, resolving on the hero's own tone */
 .words {
   position: absolute;
-  top: 50%;
+  top: 34%;
   left: 50%;
   translate: -50% -50%;
   z-index: 3;
   font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(3.4rem, 13vw, 12rem);
-  line-height: 0.9;
+  font-weight: 500;
+  font-size: clamp(2.8rem, 8vw, 7rem);
+  line-height: 0.95;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  color: transparent;
-  background: url("/images/atelier.png") center 34% / 120% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-stroke: 1px rgba(172, 139, 81, 0.45);
-  filter: drop-shadow(0 6px 26px rgba(105, 82, 46, 0.4));
-  will-change: transform, opacity, filter;
+  color: var(--gold-deep);
+  /* a soft cast under the title. A text-shadow composites far cheaper than an
+     animated drop-shadow filter and looks the same at this blur radius. */
+  text-shadow: 0 6px 26px rgba(105, 82, 46, 0.22);
   pointer-events: none;
 }
 
@@ -80,11 +142,17 @@
   position: absolute;
   left: 50%;
   translate: -50%;
-  top: 57%;
+  top: 55%;
   width: min(960px, 90vw);
   text-align: center;
   z-index: 4;
-  will-change: transform, opacity, filter;
+}
+
+/* will-change only while the reveal is actually running, then released so the
+   hand-off into Chapter III has no lingering GPU layers to manage */
+.playing .words,
+.playing .storyWrap {
+  will-change: transform, opacity;
 }
 
 .line {
@@ -117,7 +185,8 @@
 
 @media (max-width: 820px) {
   .words {
-    font-size: clamp(2.8rem, 17vw, 6rem);
+    top: 30%;
+    font-size: clamp(2.4rem, 13vw, 5rem);
   }
   .storyWrap {
     top: 54%;

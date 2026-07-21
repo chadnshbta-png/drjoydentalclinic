@@ -417,5 +417,5 @@ export const clinicianClusters: Cluster[] = [
   },
 ];
 
-export const FRAME_COUNT = 720;
-export const frameSrc = (i: number) => `/frame/frame (${i + 1}).webp`;
+export const FRAME_COUNT = 719;
+export const frameSrc = (i: number) => `/frame/farmes (${i + 1}).webp`;
