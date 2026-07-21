@@ -13,6 +13,14 @@ import {
   makeGlass,
   makeCeramic,
 } from "./dentalModels";
+import {
+  makeImplantFixture,
+  makeAbutment,
+  makeCrown,
+  makeBracket,
+  BRACKET_SLOT_Z,
+  BRACKET_SLOT_Y,
+} from "./proceduralDental";
 
 /* ————— shared helpers ————— */
 
@@ -86,37 +94,36 @@ export function AlignerScene(_: { quality: number }) {
   );
 }
 
-/* ————— 02 · Implantology — a real single-tooth implant restoration seats —————
-   Not an exploded diagram: the titanium fixture is already placed in the bone
-   and the abutment is already torqued onto it — one fixed, assembled base. The
-   ceramic crown begins a little above the abutment, then travels straight down
-   the implant axis and seats precisely onto it, closing every gap, and finishes
-   with a tiny locking settle. The viewer reads it immediately as "the tooth was
-   installed onto the implant." No floating parts, no intersections, no crown
-   left hovering. */
+/* ————— 02 · Implantology — a real implant restoration, built procedurally —————
+   Everything here is generated in Three.js — a tapered titanium fixture with a
+   real helical thread, a machined abutment with an anatomic emergence profile,
+   and a lathed ceramic crown shaped like a maxillary central incisor. The
+   fixture is already installed and the abutment torqued onto it; the crown
+   begins above, descends the implant axis, and seats onto the abutment margin
+   with zero gap — finishing with a subtle locking settle. It reads immediately
+   as a tooth being installed onto an implant, no caption required. */
+
+// datum: fixture platform + abutment base at y = 0. The abutment finish line
+// (where the crown margin closes onto metal) sits here — the crown's cervical
+// origin rests exactly on it, so "seated" is truly flush with no gap.
+const ABUT_MARGIN_Y = 0.14;
 
 export function ImplantScene(_: { quality: number }) {
   const root = useRef<THREE.Group>(null);
   const crown = useRef<THREE.Group>(null);
-  const enamel = useMemo(() => makeEnamel(), []);
 
-  // Fine, evenly-pitched threads down a tapered fixture body — reads as a real
-  // implant screw rather than a stack of primitives.
-  const threads = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => ({ y: 0.12 - i * 0.088, r: lerp(0.125, 0.052, i / 6) })),
+  // materials: brushed titanium fixture, brighter machined abutment, and a
+  // wet-looking dental ceramic for the crown
+  const titaniumMat = useMemo(
+    () => new THREE.MeshStandardMaterial({ ...titanium }),
     []
   );
+  const ceramic = useMemo(() => makeCeramic(), []);
 
-  // ——— the seating axis, in fixed local units ———
-  // The abutment sits atop the fixture; its collar top (where the crown's inner
-  // margin meets metal) is at CROWN_SEAT. The crown's own model origin sits a
-  // little below its base, so the seated crown group rests at CROWN_SEAT and the
-  // ceramic wraps down over the abutment with no visible gap.
-  // 0.62 is the crown-group Y at which the ceramic base already meets the
-  // abutment collar with no gap — the exact seated position the assembled view
-  // resolved to. We keep that as the target so "seated" means truly flush.
-  const CROWN_SEAT = 0.62;  // crown group Y when fully, precisely seated
-  const CROWN_LIFT = 0.34;  // "slightly above" — a short, believable approach
+  // procedural geometry — built once, disposed by R3F on unmount
+  const fixture = useMemo(() => makeImplantFixture(1.25, 0.19, titaniumMat), [titaniumMat]);
+  const abutGeom = useMemo(() => makeAbutment(0.6, 0.17), []);
+  const crownGeom = useMemo(() => makeCrown(1.05, 0.21), []);
 
   useFrame((state, dt) => {
     const p = craftProgress.implant;
@@ -124,71 +131,40 @@ export function ImplantScene(_: { quality: number }) {
     // one slow, engineered quarter-turn across the whole vignette + gentle cursor
     // lean, so the seat is seen from a subtly shifting angle (never a full spin)
     if (root.current)
-      root.current.rotation.y = damp(root.current.rotation.y, -0.42 + p * 0.42 + state.pointer.x * 0.05, 3, dt);
+      root.current.rotation.y = damp(root.current.rotation.y, -0.5 + p * 0.5 + state.pointer.x * 0.05, 3, dt);
 
     if (crown.current) {
-      // approach (0.1 → 0.72): the crown descends from just above the abutment
-      // and closes the gap completely — easing out so it decelerates into the
-      // seat exactly like a component being placed by hand.
+      // approach (0.1 → 0.72): the crown descends from above the abutment and
+      // closes the gap completely — easing out so it decelerates into the seat
+      // exactly like a component being placed by hand.
       const approach = smooth(p, 0.1, 0.72);
-      let y = lerp(CROWN_SEAT + CROWN_LIFT, CROWN_SEAT, approach);
+      let y = lerp(ABUT_MARGIN_Y + 1.15, ABUT_MARGIN_Y, approach);
 
-      // locking settle (0.78 → 1): once seated, one tiny downward press-and-rest
-      // — a couple of hundredths of a unit — that reads as the crown clicking
-      // fully home onto the abutment. It never lifts back above the seat.
+      // locking settle (0.78 → 1): one tiny downward press-and-rest that reads
+      // as the crown clicking fully home. It never lifts back above the seat.
       const lock = smooth(p, 0.78, 1);
-      y -= Math.sin(lock * Math.PI) * 0.028;
+      y -= Math.sin(lock * Math.PI) * 0.02;
 
       crown.current.position.y = y;
     }
   });
 
   return (
-    <group ref={root} position={[0, -0.1, 0]}>
-      {/* the ceramic crown — the single tooth itself, the only travelling part */}
-      <group ref={crown}>
-        <SingleTooth target={1.7} rotation={TOOTH_ROT} enamel={enamel} />
+    <group ref={root} position={[0, -0.25, 0]}>
+      {/* the ceramic crown — the only travelling part, seats onto the margin */}
+      <group ref={crown} position={[0, ABUT_MARGIN_Y, 0]}>
+        <mesh geometry={crownGeom} material={ceramic} castShadow />
       </group>
 
       {/* the abutment — already torqued onto the fixture, waiting for the crown */}
-      <group position={[0, 0.16, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.11, 0.145, 0.3, 32]} />
-          <meshStandardMaterial {...abutment} />
-        </mesh>
-        {/* a subtle chamfer where the crown seats, so the join looks machined */}
-        <mesh position={[0, 0.16, 0]}>
-          <cylinderGeometry args={[0.075, 0.11, 0.06, 32]} />
-          <meshStandardMaterial {...abutment} />
-        </mesh>
-      </group>
+      <mesh geometry={abutGeom} position={[0, 0, 0]}>
+        <meshStandardMaterial {...abutment} />
+      </mesh>
 
-      {/* the titanium fixture — tapered body, smooth apex, fine threads */}
-      <group position={[0, -0.28, 0]}>
-        {/* tapered screw body */}
-        <mesh position={[0, -0.05, 0]}>
-          <cylinderGeometry args={[0.135, 0.058, 0.62, 32]} />
-          <meshStandardMaterial {...titanium} />
-        </mesh>
-        {/* smooth conical apex — no hard primitive edge at the tip */}
-        <mesh position={[0, -0.4, 0]}>
-          <coneGeometry args={[0.058, 0.14, 32]} />
-          <meshStandardMaterial {...titanium} />
-        </mesh>
-        {/* the platform the abutment mounts onto */}
-        <mesh position={[0, 0.27, 0]}>
-          <cylinderGeometry args={[0.13, 0.135, 0.08, 32]} />
-          <meshStandardMaterial {...abutment} />
-        </mesh>
-        {threads.map((t, i) => (
-          <mesh key={i} position={[0, t.y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[t.r, 0.02, 12, 48]} />
-            <meshStandardMaterial {...titanium} />
-          </mesh>
-        ))}
-      </group>
+      {/* the titanium fixture — platform at y=0, thread + apex descending */}
+      <primitive object={fixture} />
 
-      <Ground y={-1.6} />
+      <Ground y={-1.55} />
     </group>
   );
 }
@@ -469,6 +445,20 @@ export function OrthoScene(_: { quality: number }) {
   // brackets bonded to the true enamel surface (raycast), one per fanned angle
   const brackets = useBracketFits();
 
+  // one shared polished-steel material for every bracket instance
+  const bracketMat = useMemo(
+    () => new THREE.MeshStandardMaterial({ ...braceMetal }),
+    []
+  );
+  // a realistic twin bracket, built once and cloned onto every fit so all the
+  // hardware shares geometry + material (cheap) yet each sits on its own tooth.
+  // Clones are memoized to the number of fits so they aren't rebuilt per render.
+  const bracketProto = useMemo(() => makeBracket(bracketMat), [bracketMat]);
+  const bracketInstances = useMemo(
+    () => brackets.map(() => bracketProto.clone()),
+    [brackets, bracketProto]
+  );
+
   useFrame((_, dt) => {
     const p = craftProgress.ortho;
     if (root.current) root.current.rotation.y = damp(root.current.rotation.y, -0.2 + p * 0.34, 3, dt);
@@ -496,14 +486,16 @@ export function OrthoScene(_: { quality: number }) {
     }
   });
 
-  // archwire — a thin polished tube threading through every bracket slot,
-  // sitting just proud of the enamel (each point pushed out along its own
-  // surface normal) so it follows the natural curve of the dental arch
+  // archwire — a thin polished tube threaded through every bracket's SLOT (the
+  // slot sits proud of the enamel by BRACKET_SLOT_Z along each surface normal),
+  // so the wire rides in the brackets and naturally follows the arch curvature
   const wireGeom = useMemo(() => {
     if (brackets.length < 2) return null;
-    const pts = brackets.map((b) => b.pos.clone().addScaledVector(b.normal, 0.03));
-    const curve = new THREE.CatmullRomCurve3(pts);
-    return new THREE.TubeGeometry(curve, 140, 0.006, 10, false);
+    const pts = brackets.map((b) =>
+      b.pos.clone().addScaledVector(b.normal, BRACKET_SLOT_Z)
+    );
+    const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.5);
+    return new THREE.TubeGeometry(curve, 160, 0.0075, 12, false);
   }, [brackets]);
 
   return (
@@ -514,20 +506,13 @@ export function OrthoScene(_: { quality: number }) {
             normalised frame the raycast used and move with the teeth exactly */}
         <group ref={braces}>
           {brackets.map((b, i) => (
-            <group
-              key={i}
-              position={b.pos}
-              quaternion={b.quat}
-            >
-              {/* the bracket body pressed flat onto the enamel — its +Z (thickness)
-                  runs along the surface normal, so its back face bonds to the tooth */}
-              <mesh position={[0, 0, 0.016]}>
-                <boxGeometry args={[0.055, 0.062, 0.032]} />
-                <meshStandardMaterial {...braceMetal} />
-              </mesh>
-              {/* a faint gold tie slot for a high-end finish */}
-              <mesh position={[0, 0, 0.034]}>
-                <boxGeometry args={[0.034, 0.012, 0.01]} />
+            <group key={i} position={b.pos} quaternion={b.quat}>
+              {/* the realistic twin bracket, bonded flat to the enamel; its pad
+                  sits on the surface and its slot faces out along the normal */}
+              <primitive object={bracketInstances[i]} />
+              {/* a fine gold tie tint in the slot for a premium finish */}
+              <mesh position={[0, BRACKET_SLOT_Y, BRACKET_SLOT_Z]}>
+                <boxGeometry args={[0.03, 0.01, 0.012]} />
                 <meshStandardMaterial color={GOLD} metalness={1} roughness={0.28} envMapIntensity={1.7} />
               </mesh>
             </group>

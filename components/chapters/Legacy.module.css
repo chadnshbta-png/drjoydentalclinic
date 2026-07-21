@@ -1,194 +1,239 @@
+/* ——— Chapter II · The Legacy — a cinematic composition ———
+   Reconceived from scratch. Premium Aureate typography, a vast faded numeral,
+   a self-drawing gold hairline and a soft breathing key-light — layered in
+   depth on the hero's warm greige, then dissolving into the ivory of Chapter
+   III. Transforms + opacity only: no blur(), no drop-shadow(), no blend modes,
+   so both hand-offs stay perfectly fluid. */
+
 .legacy {
   position: relative;
-  /* continue the hero's exact warm tone, then ease into the ivory page only
-     near the very bottom so it reads as one uninterrupted shot */
-  background: linear-gradient(#e9e4db 0%, #e9e4db 62%, var(--bg) 100%);
+  /* continue the hero's exact warm tone */
+  background: #e9e4db;
 }
 
-/* ——— the pinned reveal stage ——— */
-
+/* ——— the pinned stage ——— */
 .pin {
+  --dissolve: 0; /* 0 = greige (from hero) · 1 = ivory (into Chapter III) */
   position: relative;
   height: 100vh;
   height: 100svh;
   overflow: hidden;
   display: grid;
   place-items: center;
+  background: #e9e4db;
 }
 
-/* ——— ambient life: two near-imperceptible layers behind the words ———
-   nothing new is *seen* — only the tone the hero left behind is kept alive:
-   a gradient that drifts, and a soft light that sweeps across the salon. */
-
-.ambient {
+/* the seamless dissolve to Chapter III's page — an ivory veil that fades in
+   over the greige as the scene lifts away. A single opacity transition on a
+   flat colour: nothing to composite expensively. */
+.pin::after {
+  content: "";
   position: absolute;
-  /* kept modest (was -12%): a smaller layer is cheaper to composite, and the
-     drift is small enough that edges never show */
-  inset: -6%;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: var(--bg);
+  opacity: var(--dissolve);
+}
+
+/* ——— cinematic lighting ——— */
+
+/* a soft warm key-light, held high and slightly left, that breathes very
+   slowly so the tone is never perfectly flat. One radial gradient — cheap. */
+.key {
+  position: absolute;
+  inset: -10%;
   z-index: 1;
   pointer-events: none;
-  /* a barely-there warm bloom that breathes very slowly, so the tone is
-     never perfectly flat */
   background:
-    radial-gradient(60% 48% at 32% 34%, rgba(214, 196, 158, 0.28), transparent 70%),
-    radial-gradient(56% 46% at 70% 66%, rgba(198, 176, 140, 0.22), transparent 72%);
-  opacity: 0.9;
-  /* animation runs ONLY while .playing is present (added on enter, removed on
-     exit) so nothing composites once the section is scrolled past */
-  animation: legacyDrift 26s ease-in-out infinite alternate paused;
+    radial-gradient(52% 44% at 40% 32%, rgba(224, 206, 168, 0.5), transparent 68%),
+    radial-gradient(46% 40% at 66% 70%, rgba(201, 178, 140, 0.28), transparent 72%);
+  opacity: 0;
 }
 
-.sweep {
+/* a wide, feathered beam of studio light passing slowly across — a plain warm
+   overlay, no blend mode (which would force an expensive blend group). */
+.beam {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  /* a wide, feathered band of warm light passing slowly across. A plain
-     low-opacity overlay in the warm palette — NO mix-blend-mode, which would
-     force the whole section into an expensive blend group every frame and is
-     the main cause of the exit hitch. Visually near-identical on this tone. */
   background: linear-gradient(
-    100deg,
-    transparent 34%,
-    rgba(255, 250, 238, 0.5) 49%,
-    rgba(255, 250, 238, 0.58) 50%,
-    rgba(255, 250, 238, 0.5) 51%,
-    transparent 66%
+    104deg,
+    transparent 36%,
+    rgba(255, 250, 238, 0.42) 49%,
+    rgba(255, 250, 238, 0.5) 50%,
+    rgba(255, 250, 238, 0.42) 51%,
+    transparent 64%
   );
   opacity: 0;
-  animation: legacySweep 19s ease-in-out infinite paused;
 }
 
-/* only while the section is genuinely on-screen do the ambient layers animate;
-   .playing is toggled by an IntersectionObserver, and will-change is scoped
-   here so GPU layers are promoted only during that window, then released. */
-.playing .ambient {
-  will-change: transform;
-  animation-play-state: running;
-}
-
-.playing .sweep {
+/* ambient motion runs ONLY while .playing is present (on enter, removed on
+   exit / at reveal-end), and will-change is scoped to that window so GPU
+   layers are promoted only then, and released cleanly for the WebGL chapter. */
+.playing .key {
   will-change: transform, opacity;
-  animation-play-state: running;
+  opacity: 1;
+  animation: legacyBreath 22s ease-in-out infinite alternate;
+}
+.playing .beam {
+  will-change: transform, opacity;
+  animation: legacyBeam 17s ease-in-out infinite;
 }
 
-@keyframes legacyDrift {
+@keyframes legacyBreath {
   0% {
-    transform: translate3d(-1.4%, -1%, 0) scale(1.02);
+    transform: translate3d(-1%, -0.8%, 0) scale(1.02);
   }
   100% {
-    transform: translate3d(1.6%, 1.2%, 0) scale(1.05);
+    transform: translate3d(1.4%, 1%, 0) scale(1.05);
   }
 }
 
-@keyframes legacySweep {
+@keyframes legacyBeam {
   0% {
-    transform: translate3d(-48%, 0, 0) skewX(-6deg);
+    transform: translate3d(-46%, 0, 0) skewX(-7deg);
     opacity: 0;
   }
-  42% {
+  44% {
     opacity: 0.7;
   }
   58% {
     opacity: 0.7;
   }
   100% {
-    transform: translate3d(48%, 0, 0) skewX(-6deg);
+    transform: translate3d(46%, 0, 0) skewX(-7deg);
     opacity: 0;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .playing .ambient,
-  .playing .sweep {
-    animation: none;
-  }
-  .sweep {
-    opacity: 0;
-  }
+/* ——— the vast chapter numeral, held far back ——— */
+.numeral {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(20rem, 52vw, 46rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: #c9ad78;
+  opacity: 0.16;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ——— the composition ——— */
+.stage {
+  position: relative;
+  z-index: 4;
+  width: min(1000px, 90vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(20px, 3.2vh, 40px);
 }
 
 .mark {
-  position: absolute;
-  top: clamp(84px, 13vh, 150px);
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  z-index: 5;
+  justify-content: center;
 }
 
-/* the title, resolving on the hero's own tone */
-.words {
-  position: absolute;
-  top: 34%;
-  left: 50%;
-  translate: -50% -50%;
-  z-index: 3;
+/* the self-drawing gold hairline */
+.rule {
+  display: block;
+  width: clamp(120px, 22vw, 260px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin-top: calc(-1 * clamp(8px, 1.4vh, 18px));
+}
+
+.belief {
+  margin: 0;
   font-family: var(--font-heading);
   font-weight: 500;
-  font-size: clamp(2.8rem, 8vw, 7rem);
-  line-height: 0.95;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  color: var(--gold-deep);
-  /* a soft cast under the title. A text-shadow composites far cheaper than an
-     animated drop-shadow filter and looks the same at this blur radius. */
-  text-shadow: 0 6px 26px rgba(105, 82, 46, 0.22);
-  pointer-events: none;
+  font-size: clamp(2.2rem, 6.2vw, 5.2rem);
+  line-height: 1.08;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  text-shadow: 0 6px 26px rgba(105, 82, 46, 0.14);
 }
 
-/* the belief — generous, centred, breathing */
-.storyWrap {
-  position: absolute;
-  left: 50%;
-  translate: -50%;
-  top: 55%;
-  width: min(960px, 90vw);
-  text-align: center;
-  z-index: 4;
-}
-
-/* will-change only while the reveal is actually running, then released so the
-   hand-off into Chapter III has no lingering GPU layers to manage */
-.playing .words,
-.playing .storyWrap {
-  will-change: transform, opacity;
+.beliefWrap {
+  display: block;
 }
 
 .line {
-  font-family: var(--font-heading);
-  font-weight: 500;
-  font-size: clamp(1.5rem, 3.4vw, 2.9rem);
-  line-height: 1.5;
-  color: var(--ink);
-  max-width: 22ch;
-  margin: 0 auto;
+  display: block;
 }
 
+/* the second breath resolves in gold-deep — the promise */
 .l2 {
   color: var(--gold-deep);
 }
 
-/* word-group mask reveal */
-.wm {
+/* character mask reveal — each glyph rises out of its own clip */
+.cm {
   display: inline-block;
   overflow: hidden;
   vertical-align: bottom;
-  padding: 0 0.04em;
-  margin: 0 0.06em;
+  /* keep spaces from collapsing */
+  white-space: pre;
 }
 
-.ww {
+.char {
   display: inline-block;
-  will-change: transform;
+}
+
+/* the quiet caption — years and promise, on a hairline rhythm */
+.caption {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 22px);
+  color: var(--gold);
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.caption i {
+  display: inline-block;
+  width: clamp(28px, 4vw, 54px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+}
+
+/* will-change scoped to the reveal window only */
+.playing .numeral,
+.playing .beliefWrap,
+.playing .stage {
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playing .key,
+  .playing .beam {
+    animation: none;
+  }
+  .beam {
+    opacity: 0;
+  }
+  .key {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 820px) {
-  .words {
-    top: 30%;
-    font-size: clamp(2.4rem, 13vw, 5rem);
+  .numeral {
+    font-size: clamp(16rem, 70vw, 30rem);
   }
-  .storyWrap {
-    top: 54%;
+  .belief {
+    font-size: clamp(2rem, 9vw, 3.4rem);
+  }
+  .stage {
+    width: 92vw;
   }
 }
