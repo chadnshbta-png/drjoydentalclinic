@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { RoundedBox, Float, ContactShadows } from "@react-three/drei";
+import { makeAnatomicTooth } from "./proceduralDental";
 
 /**
  * The Smile Design scenes — floating choice objects, and one elegant
@@ -17,12 +18,18 @@ const damp = THREE.MathUtils.damp;
 const smooth = THREE.MathUtils.smoothstep;
 const GOLD = "#AC8B51";
 
+// Premium enamel for the consultation teeth — a wet clearcoat over a dentine
+// body, plus a warm grazing sheen that fakes the natural translucency of thin
+// tooth edges. Same tone as before; only the surface realism is richer.
 const ceramic = {
   color: "#f4eee2",
   roughness: 0.15,
   clearcoat: 1,
   clearcoatRoughness: 0.1,
   metalness: 0.02,
+  sheen: 0.5,
+  sheenRoughness: 0.42,
+  sheenColor: new THREE.Color("#fff0d6"),
 } as const;
 
 function glassMat(opacity = 0.42) {
@@ -44,6 +51,12 @@ function prand(s: number) {
   return x - Math.floor(x);
 }
 
+// A realistic anatomical tooth (crown + root), built once and shared. It keeps
+// the exact footprint of the primitive it replaced (0.42 × 0.5 × 0.34, centred
+// on the crown) so every existing layout, position and animation is unchanged —
+// only the shape is upgraded to a natural, anatomically-accurate tooth.
+const ANATOMIC_TOOTH_GEOM = makeAnatomicTooth("anterior", 0.42, 0.5, 0.34);
+
 function Tooth({
   material,
   scale = 1,
@@ -51,12 +64,28 @@ function Tooth({
 }: { material: THREE.Material; scale?: number } & Omit<React.ComponentProps<"group">, "scale">) {
   return (
     <group {...(props as object)} scale={scale}>
-      <RoundedBox args={[0.42, 0.5, 0.34]} radius={0.14} smoothness={3} material={material} />
-      <mesh position={[0, -0.32, 0]} material={material}>
-        <cylinderGeometry args={[0.13, 0.07, 0.24, 12]} />
-      </mesh>
+      <mesh geometry={ANATOMIC_TOOTH_GEOM} material={material} />
     </group>
   );
+}
+
+// An anatomical tooth at an arbitrary footprint (memoised per size), for the
+// larger focal subjects that used to be plain rounded boxes.
+function ShapedTooth({
+  material,
+  kind = "anterior",
+  w,
+  h,
+  d,
+}: {
+  material: THREE.Material;
+  kind?: "anterior" | "posterior";
+  w: number;
+  h: number;
+  d: number;
+}) {
+  const geom = useMemo(() => makeAnatomicTooth(kind, w, h, d), [kind, w, h, d]);
+  return <mesh geometry={geom} material={material} />;
 }
 
 function Ground({ y = -1.15 }: { y?: number }) {
@@ -112,10 +141,7 @@ export function HeroTooth({ finished = false }: { finished?: boolean }) {
     <group position={[0, 0.1, 0]}>
       <Float speed={1.2} rotationIntensity={0.14} floatIntensity={0.5}>
         <group ref={g}>
-          <RoundedBox args={[0.95, 1.15, 0.8]} radius={0.28} smoothness={4} material={mat} />
-          <mesh position={[0, -0.86, 0]} material={mat}>
-            <cylinderGeometry args={[0.24, 0.09, 0.7, 16]} />
-          </mesh>
+          <ShapedTooth material={mat} w={0.95} h={1.15} d={0.8} />
         </group>
       </Float>
       {finished && (
@@ -345,7 +371,7 @@ function DesignScene({ reveal }: { reveal: RevealRef }) {
       <spotLight ref={light} position={[0, 2.5, 2.4]} angle={0.5} penumbra={1} color="#ffedd0" intensity={12} />
       <Tooth material={enamel} position={[-0.62, 0, -0.12]} scale={1.3} rotation={[0, 0.18, 0]} />
       <group position={[0, 0.06, 0]}>
-        <RoundedBox args={[0.54, 0.66, 0.42]} radius={0.16} smoothness={4} material={worn} />
+        <ShapedTooth material={worn} w={0.54} h={0.66} d={0.42} />
       </group>
       <Tooth material={enamel} position={[0.62, 0, -0.12]} scale={1.3} rotation={[0, -0.18, 0]} />
       <group ref={veneer} position={[0, 0.4, 1.6]}>
@@ -392,13 +418,7 @@ function ComfortScene({ reveal }: { reveal: RevealRef }) {
     <group position={[0, 0.05, 0]}>
       <Float speed={1.2} rotationIntensity={0.1} floatIntensity={0.4}>
         <group ref={toothRef}>
-          <RoundedBox args={[1.05, 0.95, 0.86]} radius={0.3} smoothness={4} material={mat} />
-          <mesh position={[-0.28, -0.72, 0]} rotation={[0, 0, 0.12]} material={mat}>
-            <cylinderGeometry args={[0.18, 0.07, 0.68, 14]} />
-          </mesh>
-          <mesh position={[0.28, -0.72, 0]} rotation={[0, 0, -0.12]} material={mat}>
-            <cylinderGeometry args={[0.18, 0.07, 0.68, 14]} />
-          </mesh>
+          <ShapedTooth material={mat} kind="posterior" w={1.05} h={0.95} d={0.86} />
         </group>
       </Float>
       <mesh ref={halo} rotation={[Math.PI / 2.2, 0, 0]}>
@@ -455,10 +475,7 @@ function PreventScene({ reveal }: { reveal: RevealRef }) {
     <group position={[0, 0.05, 0]}>
       <Float speed={1.2} rotationIntensity={0.12} floatIntensity={0.45}>
         <group ref={toothRef}>
-          <RoundedBox args={[0.95, 1.15, 0.8]} radius={0.28} smoothness={4} material={mat} />
-          <mesh position={[0, -0.86, 0]} material={mat}>
-            <cylinderGeometry args={[0.24, 0.09, 0.7, 16]} />
-          </mesh>
+          <ShapedTooth material={mat} w={0.95} h={1.15} d={0.8} />
         </group>
       </Float>
       <mesh ref={ring1} rotation={[Math.PI / 2.3, 0, 0]}>

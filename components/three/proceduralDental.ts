@@ -1,6 +1,7 @@
 "use client";
 
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /**
  * Procedural dental hardware — built entirely in Three.js, no external assets.
@@ -203,3 +204,112 @@ export function makeBracket(material?: THREE.Material) {
  */
 export const BRACKET_SLOT_Z = 0.03;
 export const BRACKET_SLOT_Y = 0.0;
+
+/* ============================================================= *
+ *  ANATOMICAL TOOTH — a realistic crown + root, procedurally lathed
+ * ============================================================= *
+ *  A drop-in, natural-looking tooth: an enamel crown with a cervical bulge and
+ *  a rounded incisal/occlusal surface, flattened labio-lingually so it reads as
+ *  a real tooth rather than a solid of revolution, plus a tapered root. Returned
+ *  as ONE merged BufferGeometry, centred so its origin matches a simple block —
+ *  it can replace a primitive tooth without shifting any layout.
+ *
+ *  `kind` shapes the crown silhouette:
+ *    • "anterior"  — an incisor: taller, a flat-ish labial face, thin edge
+ *    • "posterior" — a molar-ish crown: shorter, broader, a rounded top
+ */
+
+export type ToothKind = "anterior" | "posterior";
+
+/**
+ * Build one anatomical tooth. `width`/`height`/`depth` set the crown's overall
+ * footprint so it matches whatever primitive it replaces; the root extends below
+ * and the whole thing is centred on the crown so its origin sits mid-crown.
+ */
+export function makeAnatomicTooth(
+  kind: ToothKind = "anterior",
+  width = 0.44,
+  height = 0.52,
+  depth = 0.36
+): THREE.BufferGeometry {
+  const rx = width / 2; // labial half-width (X)
+  const ch = height;    // crown height
+
+  // crown side-profile: radius (in the X/width sense) as we climb from the
+  // cervical margin (base) to the incisal/occlusal surface (top)
+  const anterior: [number, number][] = [
+    [rx * 0.72, 0.0],    // cervical margin
+    [rx * 0.99, 0.14],   // cervical bulge (fullest contour, just above the neck)
+    [rx * 1.0, 0.34],
+    [rx * 0.97, ch * 0.62],
+    [rx * 0.88, ch * 0.82],
+    [rx * 0.66, ch * 0.94], // rounded toward the incisal edge
+    [rx * 0.34, ch * 0.995],
+    [0.0, ch],           // incisal edge on the axis
+  ];
+  const posterior: [number, number][] = [
+    [rx * 0.8, 0.0],     // cervical margin
+    [rx * 1.0, 0.12],    // cervical bulge
+    [rx * 1.02, 0.3],
+    [rx * 1.0, ch * 0.55],
+    [rx * 0.96, ch * 0.74],
+    [rx * 0.86, ch * 0.86], // broad occlusal shoulder
+    [rx * 0.6, ch * 0.95],
+    [rx * 0.28, ch * 0.99],
+    [0.0, ch],
+  ];
+  const crownPts = (kind === "anterior" ? anterior : posterior).map(([r, y]) => V(r, y));
+  const crown = new THREE.LatheGeometry(crownPts, 40);
+
+  // tapered root, hanging below the cervical margin (y < 0)
+  const rootLen = kind === "anterior" ? ch * 0.9 : ch * 0.78;
+  const rootPts: THREE.Vector2[] = [
+    V(rx * 0.72, 0.0),      // meets the crown cervix exactly (no seam gap)
+    V(rx * 0.6, -rootLen * 0.28),
+    V(rx * 0.42, -rootLen * 0.62),
+    V(rx * 0.22, -rootLen * 0.88),
+    V(rx * 0.06, -rootLen),  // rounded apex
+    V(0.0, -rootLen - 0.01),
+  ];
+  const root = new THREE.LatheGeometry(rootPts, 40);
+
+  // merge crown + root into one geometry
+  let geom = mergeGeometries([crown, root], false) ?? crown;
+
+  // flatten labio-lingually so the tooth is not a bead: squash Z to `depth`
+  const zScale = depth / width;
+  geom.scale(1, 1, zScale);
+
+  // centre on the crown (origin mid-crown), matching a centred block's origin
+  geom.translate(0, -ch / 2, 0);
+
+  geom.computeVertexNormals();
+  return geom;
+}
+
+/**
+ * Premium translucent enamel for the procedural teeth — a wet dentine body
+ * under a clearcoat, with a warm grazing sheen that fakes the light-scatter of
+ * thin incisal edges. No transmission (its buffer pass reads wrong on the alpha
+ * canvas); the wet, layered look is carried by clearcoat + sheen (fast + right).
+ */
+export function makeRealisticEnamel(color = "#f2ebdd") {
+  const m = new THREE.MeshPhysicalMaterial({
+    color,
+    roughness: 0.16,
+    metalness: 0,
+    clearcoat: 1,
+    clearcoatRoughness: 0.06,
+    ior: 1.65,
+    reflectivity: 0.5,
+    envMapIntensity: 1.55,
+    specularIntensity: 1,
+    specularColor: new THREE.Color("#fffaf0"),
+  });
+  // warm sheen concentrated at grazing angles → the glow of thin edges, the
+  // cheap convincing stand-in for enamel's natural translucency
+  m.sheen = 0.55;
+  m.sheenRoughness = 0.42;
+  m.sheenColor = new THREE.Color("#fff0d6");
+  return m;
+}

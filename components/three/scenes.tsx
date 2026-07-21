@@ -8,7 +8,6 @@ import { craftProgress } from "./progress";
 import {
   Dentition,
   SingleTooth,
-  useDentition,
   makeEnamel,
   makeGlass,
   makeCeramic,
@@ -18,6 +17,8 @@ import {
   makeAbutment,
   makeCrown,
   makeBracket,
+  makeAnatomicTooth,
+  makeRealisticEnamel,
   BRACKET_SLOT_Z,
   BRACKET_SLOT_Y,
 } from "./proceduralDental";
@@ -186,13 +187,10 @@ export function VeneerScene(_: { quality: number }) {
     const p = craftProgress.veneer;
     const t = state.clock.elapsedTime;
 
-    // its own identity — CRAFT & PRECISION: a slow, deliberate turntable
-    // presentation of a single hand-made piece. The rotation eases as the shell
-    // is placed, so the eye can study the fit — a jeweller turning a stone to
-    // set it, not a mechanism demonstrating itself. (cursor adds a whisper only)
-    const settle = smooth(p, 0.2, 0.72); // rotation slows as the veneer seats
-    if (root.current) root.current.rotation.y = damp(root.current.rotation.y, state.pointer.x * 0.09, 3, dt);
-    if (spin.current) spin.current.rotation.y += dt * lerp(0.26, 0.06, settle);
+    // The piece is held COMPLETELY STILL — no turntable spin, no cursor lean, no
+    // idle drift. Elegance and realism over movement: the tooth simply rests in
+    // the studio light while the veneer is placed (scroll-driven) and the polish
+    // highlight travels across it (a lighting change only).
 
     // the thin ceramic shell appears, then glides onto the labial face and
     // conforms exactly — decelerating into contact (easeOut) so it kisses the
@@ -339,194 +337,289 @@ export function ScanScene(_: { quality: number }) {
   );
 }
 
-/* ————— 05 · Orthodontics — brackets and archwire, bonded onto the smile —————
-   The brackets are not placed on a guessed arc — they are raycast onto the
-   REAL enamel surface of human_teeth.glb, in the exact centred/scaled frame the
-   Dentition renders in. Each bracket sits flush on the labial surface it hit and
-   is oriented to that surface's normal, so it follows the individual tooth's
-   curvature and angle with no gap. The archwire then threads through the true
-   bracket points. */
+/* ————— 05 · Orthodontics — a fully procedural clinical appliance —————
+   Rebuilt from scratch in Three.js, no GLB. A real upper dental arch of
+   individual anatomical teeth (centrals · laterals · canines · premolars ·
+   molars) is laid out along a parabolic arch curve at clinically plausible
+   widths and spacing. Each tooth carries a realistic twin bracket bonded to its
+   OWN labial face — the bracket is a child of the tooth, so it can never float
+   or detach — and a polished metal archwire threads through every bracket slot,
+   naturally following the curvature of the arch. */
 
-// One bracket, resolved against the real teeth surface: a seat point on the
-// enamel and an orientation whose +Z faces straight out along the surface
-// normal (so the bracket body presses flat onto the tooth).
-type BracketFit = { pos: THREE.Vector3; quat: THREE.Quaternion; normal: THREE.Vector3 };
+// A tooth's place on the arch: its half-mouth index, crown size and type.
+type ArchTooth = {
+  kind: "anterior" | "posterior";
+  w: number; // mesio-distal crown width
+  h: number; // crown height
+  d: number; // labio-lingual depth
+};
 
-function useBracketFits(): BracketFit[] {
-  const { teeth, gums } = useDentition();
-  return useMemo(() => {
-    // Reproduce EXACTLY the transform <Dentition target={3.4} rotation={ARCH_ROT}>
-    // applies, so our raycast frame matches what the viewer sees.
-    teeth.computeBoundingBox();
-    gums.computeBoundingBox();
-    const box = teeth.boundingBox!.clone().union(gums.boundingBox!);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const scale = 3.4 / (Math.max(size.x, size.y, size.z) || 1);
+// Half-arch tooth sequence from the midline out: central, lateral, canine,
+// 1st & 2nd premolar, 1st molar. Mirrored to the other side. Widths/heights are
+// scaled from real average crown dimensions so proportions and spacing read as
+// a genuine dentition.
+const HALF_ARCH: ArchTooth[] = [
+  { kind: "anterior", w: 0.42, h: 0.6, d: 0.32 },  // central incisor
+  { kind: "anterior", w: 0.32, h: 0.52, d: 0.3 },  // lateral incisor
+  { kind: "anterior", w: 0.38, h: 0.64, d: 0.34 }, // canine (tallest)
+  { kind: "posterior", w: 0.36, h: 0.46, d: 0.36 }, // 1st premolar
+  { kind: "posterior", w: 0.36, h: 0.44, d: 0.36 }, // 2nd premolar
+  { kind: "posterior", w: 0.46, h: 0.44, d: 0.42 }, // 1st molar
+];
 
-    // Build the teeth mesh in the final normalised frame: outer group holds
-    // rotation(ARCH_ROT)+scale, inner group holds the centring offset.
-    const inner = new THREE.Group();
-    inner.position.copy(center).multiplyScalar(-1);
-    const mesh = new THREE.Mesh(teeth);
-    inner.add(mesh);
-    const outer = new THREE.Group();
-    outer.rotation.set(ARCH_ROT[0], ARCH_ROT[1], ARCH_ROT[2]);
-    outer.scale.setScalar(scale);
-    outer.add(inner);
-    outer.updateMatrixWorld(true);
+// A full upper arch, midline-symmetric. Each entry gets an along-arch arc-length
+// position (its centre), so teeth sit edge-to-edge with realistic contact.
+function buildArch() {
+  const seq: ArchTooth[] = [
+    ...[...HALF_ARCH].reverse(),
+    ...HALF_ARCH,
+  ];
+  // cumulative arc-length centres (contact point to contact point)
+  const gap = 0.012; // a hair of interproximal space
+  const centres: number[] = [];
+  let s = 0;
+  for (let i = 0; i < seq.length; i++) {
+    if (i === 0) s = seq[i].w / 2;
+    else s += seq[i - 1].w / 2 + gap + seq[i].w / 2;
+    centres.push(s);
+  }
+  const total = centres[centres.length - 1] + seq[seq.length - 1].w / 2;
+  // centre the whole run around 0
+  const mid = total / 2;
+  return { seq, centres: centres.map((c) => c - mid), span: total };
+}
 
-    // The arch, now normalised, spans ~[-1.7, 1.7] in X. Fan rays across the
-    // upper front teeth and shoot each one horizontally at the arch centre; the
-    // first hit is the labial (front) enamel of whichever tooth is there.
-    const ray = new THREE.Raycaster();
-    const n = 12;
-    const fits: BracketFit[] = [];
-    const up = new THREE.Vector3(0, 1, 0);
-    const halfWidth = 1.34; // how wide across the arch to place brackets
-    // mid-labial band: try a couple of heights per angle and take the first that
-    // actually lands on a crown, so no bracket is dropped near the arch edges
-    const bandY = [0.34, 0.14, 0.5];
-
-    for (let i = 0; i < n; i++) {
-      const t = i / (n - 1);
-      const x = lerp(-halfWidth, halfWidth, t);
-
-      let hit: THREE.Intersection | undefined;
-      for (const y of bandY) {
-        // origin well in front of the arch at this x/height, aimed at the arch
-        // centre-line so the ray meets the front face close to perpendicular
-        const origin = new THREE.Vector3(x, y, 3.2);
-        const target = new THREE.Vector3(x * 0.25, y, -0.4);
-        const dir = target.clone().sub(origin).normalize();
-        ray.set(origin, dir);
-        // default raycaster returns hits sorted nearest-first, so hits[0] is the
-        // labial enamel surface we want (no BVH acceleration needed for one bake)
-        const hits = ray.intersectObject(mesh, false);
-        if (hits.length) {
-          hit = hits[0];
-          break;
-        }
-      }
-      if (!hit) continue;
-
-      const pos = hit.point.clone();
-      // surface normal in world (normalised) space; fall back to facing forward
-      let normal = new THREE.Vector3(0, 0, 1);
-      if (hit.face) {
-        normal = hit.face.normal
-          .clone()
-          .applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld))
-          .normalize();
-      }
-      // guard against a back-face or grazing hit — keep the bracket facing out
-      if (normal.z < 0.05) normal.set(pos.x, 0, pos.z + 0.3).normalize();
-
-      // orient the bracket so its +Z axis lies along the surface normal (body
-      // presses flat to the enamel), keeping world-up as the reference
-      const zAxis = normal.clone();
-      const xAxis = new THREE.Vector3().crossVectors(up, zAxis).normalize();
-      const yAxis = new THREE.Vector3().crossVectors(zAxis, xAxis).normalize();
-      const m = new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis);
-      const quat = new THREE.Quaternion().setFromRotationMatrix(m);
-
-      fits.push({ pos, quat, normal });
-    }
-    return fits;
-  }, [teeth, gums]);
+// Map an arc-length position `u` (centred, −span/2..span/2) to a point + outward
+// normal on a parabolic dental arch. The parabola opens toward the viewer (+Z),
+// so the labial faces point outward and slightly forward, like a real arch.
+function archPoint(u: number, span: number) {
+  // normalised across the arch, −1..1
+  const t = (u / (span / 2));
+  const x = t * 1.75;                    // half-width of the arch in scene units
+  const z = 1.15 - Math.pow(t, 2) * 1.7; // parabola: front teeth forward (+z)
+  // outward normal = derivative-perpendicular of the parabola, pointing out/front
+  const dz = -2 * t * 1.7 / (span / 2);  // dz/du
+  const dx = 1.75 / (span / 2);          // dx/du
+  const n = new THREE.Vector3(dz, 0, -dx).normalize(); // rotate tangent −90° → outward
+  if (n.z < 0) n.negate();
+  return { pos: new THREE.Vector3(x, 0, z), normal: n };
 }
 
 export function OrthoScene(_: { quality: number }) {
   const root = useRef<THREE.Group>(null);
   const arch = useRef<THREE.Group>(null);
-  const braces = useRef<THREE.Group>(null);
-  const enamel = useMemo(() => makeEnamel(), []);
+  const teethRefs = useRef<(THREE.Group | null)[]>([]);
 
-  // brackets bonded to the true enamel surface (raycast), one per fanned angle
-  const brackets = useBracketFits();
+  // realistic translucent enamel + polished bracket/wire steel
+  const enamel = useMemo(() => makeRealisticEnamel("#f1e9d9"), []);
+  const bracketMat = useMemo(() => new THREE.MeshStandardMaterial({ ...braceMetal }), []);
 
-  // one shared polished-steel material for every bracket instance
-  const bracketMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ ...braceMetal }),
-    []
+  // the arch layout + per-tooth anatomical geometry (built once)
+  const { seq, centres, span } = useMemo(() => buildArch(), []);
+  const teeth = useMemo(
+    () =>
+      seq.map((t, i) => {
+        const geom = makeAnatomicTooth(t.kind, t.w, t.h, t.d);
+        const { pos, normal } = archPoint(centres[i], span);
+        // seat the tooth on the arch, its labial face along the outward normal
+        const quat = new THREE.Quaternion().setFromRotationMatrix(
+          new THREE.Matrix4().makeBasis(
+            new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), normal).normalize(),
+            new THREE.Vector3(0, 1, 0),
+            normal.clone()
+          )
+        );
+        // the labial surface sits at +depth/2 along the normal from the tooth
+        // centre; the bracket bonds there, the slot a touch further out
+        const bracketLocalZ = t.d / 2; // tooth is centred; front face at +z locally
+        return { geom, pos, quat, normal, w: t.w, h: t.h, bracketLocalZ };
+      }),
+    [seq, centres, span]
   );
-  // a realistic twin bracket, built once and cloned onto every fit so all the
-  // hardware shares geometry + material (cheap) yet each sits on its own tooth.
-  // Clones are memoized to the number of fits so they aren't rebuilt per render.
+
+  // one realistic twin bracket, cloned per tooth (shared geometry + material)
   const bracketProto = useMemo(() => makeBracket(bracketMat), [bracketMat]);
   const bracketInstances = useMemo(
-    () => brackets.map(() => bracketProto.clone()),
-    [brackets, bracketProto]
+    () => teeth.map(() => bracketProto.clone()),
+    [teeth, bracketProto]
   );
+
+  // a small per-tooth malocclusion (offset + tilt) that eases to a perfect arch
+  const jitter = useMemo(
+    () =>
+      teeth.map((_, i) => {
+        const r = (n: number) => {
+          const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453;
+          return x - Math.floor(x);
+        };
+        return {
+          dz: (r(1) - 0.5) * 0.1,
+          dx: (r(2) - 0.5) * 0.08,
+          dy: (r(3) - 0.5) * 0.05,
+          rot: (r(4) - 0.5) * 0.2,
+        };
+      }),
+    [teeth]
+  );
+
+  // The archwire is a real, updatable tube: we build its topology ONCE, then
+  // rewrite its vertex positions each frame so it always threads through the
+  // live bracket slots — following the arch exactly as the teeth settle, with
+  // zero per-frame allocation. Each bracket is a CHILD of its tooth, so it is
+  // physically bonded and can never float; the wire simply tracks the slots.
+  const WIRE_SEGS = 180;
+  const WIRE_RADIAL = 10;
+  const wire = useMemo(() => {
+    // a straight seed tube; positions are overwritten every frame
+    const seed = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(1, 0, 0),
+    ]);
+    const geom = new THREE.TubeGeometry(seed, WIRE_SEGS, 0.008, WIRE_RADIAL, false);
+    return geom;
+  }, []);
+  const wireRef = useRef<THREE.Mesh>(null);
+
+  // scratch objects reused each frame (no allocation in the loop)
+  const scratch = useMemo(
+    () => ({
+      slots: teeth.map(() => new THREE.Vector3()),
+      local: new THREE.Vector3(),
+      curve: new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3()], false, "catmullrom", 0.5),
+      p0: new THREE.Vector3(),
+      tan: new THREE.Vector3(),
+      nrm: new THREE.Vector3(),
+      bnm: new THREE.Vector3(),
+      up: new THREE.Vector3(0, 1, 0),
+    }),
+    [teeth]
+  );
+
+  // per-bracket refs so the "bond on" scale can pop each bracket in
+  const bracketRefs = useRef<(THREE.Group | null)[]>([]);
 
   useFrame((_, dt) => {
     const p = craftProgress.ortho;
     if (root.current) root.current.rotation.y = damp(root.current.rotation.y, -0.2 + p * 0.34, 3, dt);
 
     // ——— the correction story ———
-    // braces bond on early; then, across the scroll, a slight imperfection in
-    // the arch resolves to a perfectly even, symmetrical smile. Because the
-    // brackets live INSIDE the same <arch> group as the teeth, they move,
-    // tilt and settle WITH the teeth — never detaching.
+    // brackets bond on early; then a per-tooth malocclusion resolves to a
+    // perfectly even arch. Each bracket is a CHILD of its tooth, so it stays
+    // bonded to the enamel and rides every movement — nothing ever floats.
     const on = smooth(p, 0.08, 0.32);
     const corrected = smooth(p, 0.3, 0.95); // 0 = crooked · 1 = aligned
     const off = 1 - corrected;
 
-    if (braces.current) {
-      braces.current.scale.setScalar(on);
-      braces.current.visible = p > 0.04;
-    }
-    if (arch.current) {
-      // a small overall irregularity that eases straight: a faint tilt + yaw,
-      // reading as teeth settling into an even arch (the GLB is one mesh, so the
-      // correction is told through the whole arch resolving to true)
-      arch.current.rotation.z = off * 0.045;
-      arch.current.rotation.y = off * 0.04;
-      arch.current.position.x = off * 0.03;
+    // apply the resolving malocclusion to each tooth; its bonded bracket + the
+    // live slot point ride along automatically
+    teeth.forEach((t, i) => {
+      const g = teethRefs.current[i];
+      if (!g) return;
+      const j = jitter[i];
+      g.position.copy(t.pos).addScaledVector(t.normal, j.dz * off);
+      g.position.x += j.dx * off;
+      g.position.y += j.dy * off;
+      // roll the tooth a touch off-true, easing to a clean arch
+      g.quaternion.copy(t.quat);
+      g.rotateZ(j.rot * off);
+
+      // bond the bracket on (scale-in), staying attached to the tooth's face
+      const b = bracketRefs.current[i];
+      if (b) {
+        b.scale.setScalar(on);
+        b.visible = p > 0.04;
+      }
+
+      // the tooth's live labial slot point, in the tooth's own frame projected
+      // to the arch frame — where the wire must pass
+      scratch.local.set(0, BRACKET_SLOT_Y + 0.02, t.bracketLocalZ + BRACKET_SLOT_Z);
+      scratch.slots[i].copy(scratch.local).applyQuaternion(g.quaternion).add(g.position);
+    });
+
+    // rewrite the wire tube through the live slot points, in place
+    if (wireRef.current) {
+      const show = p > 0.06;
+      wireRef.current.visible = show;
+      if (show) updateTube(wire, scratch.slots, WIRE_SEGS, WIRE_RADIAL, 0.008, scratch);
     }
   });
 
-  // archwire — a thin polished tube threaded through every bracket's SLOT (the
-  // slot sits proud of the enamel by BRACKET_SLOT_Z along each surface normal),
-  // so the wire rides in the brackets and naturally follows the arch curvature
-  const wireGeom = useMemo(() => {
-    if (brackets.length < 2) return null;
-    const pts = brackets.map((b) =>
-      b.pos.clone().addScaledVector(b.normal, BRACKET_SLOT_Z)
-    );
-    const curve = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.5);
-    return new THREE.TubeGeometry(curve, 160, 0.0075, 12, false);
-  }, [brackets]);
-
   return (
-    <group ref={root} position={[0, 0.1, 0]}>
+    <group ref={root} position={[0, 0.05, 0]}>
       <group ref={arch}>
-        <Dentition target={3.4} rotation={ARCH_ROT} enamel={enamel} />
-        {/* brackets + wire live INSIDE the arch group so they inherit the same
-            normalised frame the raycast used and move with the teeth exactly */}
-        <group ref={braces}>
-          {brackets.map((b, i) => (
-            <group key={i} position={b.pos} quaternion={b.quat}>
-              {/* the realistic twin bracket, bonded flat to the enamel; its pad
-                  sits on the surface and its slot faces out along the normal */}
+        {/* the procedural dentition — individual anatomical teeth on the arch,
+            each carrying its own bonded bracket as a direct child */}
+        {teeth.map((t, i) => (
+          <group
+            key={i}
+            ref={(el) => void (teethRefs.current[i] = el)}
+            position={t.pos}
+            quaternion={t.quat}
+          >
+            <mesh geometry={t.geom} material={enamel} />
+            {/* the bracket bonded to THIS tooth's labial face (+Z) — a child of
+                the tooth group, so it is physically attached and never floats */}
+            <group
+              ref={(el) => void (bracketRefs.current[i] = el)}
+              position={[0, 0, t.bracketLocalZ]}
+            >
               <primitive object={bracketInstances[i]} />
-              {/* a fine gold tie tint in the slot for a premium finish */}
               <mesh position={[0, BRACKET_SLOT_Y, BRACKET_SLOT_Z]}>
                 <boxGeometry args={[0.03, 0.01, 0.012]} />
                 <meshStandardMaterial color={GOLD} metalness={1} roughness={0.28} envMapIntensity={1.7} />
               </mesh>
             </group>
-          ))}
-          {wireGeom && (
-            <mesh geometry={wireGeom}>
-              <meshStandardMaterial {...braceMetal} />
-            </mesh>
-          )}
-        </group>
+          </group>
+        ))}
+
+        {/* the archwire — one continuous polished tube, rewritten each frame to
+            thread every live bracket slot, so it always follows the arch */}
+        <mesh ref={wireRef} geometry={wire} visible={false}>
+          <meshStandardMaterial {...braceMetal} />
+        </mesh>
       </group>
-      <Ground />
+      <Ground y={-1.2} />
     </group>
   );
+}
+
+/** Rewrite a tube geometry's vertices in place to follow a poly-line of points
+    (a Catmull-Rom through them), with a fixed radius. No allocation per call. */
+function updateTube(
+  geom: THREE.TubeGeometry,
+  points: THREE.Vector3[],
+  segs: number,
+  radial: number,
+  radius: number,
+  s: { curve: THREE.CatmullRomCurve3; p0: THREE.Vector3; tan: THREE.Vector3; nrm: THREE.Vector3; bnm: THREE.Vector3; up: THREE.Vector3 }
+) {
+  s.curve.points = points;
+  const pos = geom.attributes.position as THREE.BufferAttribute;
+  const nor = geom.attributes.normal as THREE.BufferAttribute;
+  for (let i = 0; i <= segs; i++) {
+    const u = i / segs;
+    s.curve.getPoint(u, s.p0);
+    s.curve.getTangent(u, s.tan).normalize();
+    // a stable frame: normal = up × tangent, binormal = tangent × normal
+    s.nrm.crossVectors(s.up, s.tan);
+    if (s.nrm.lengthSq() < 1e-6) s.nrm.set(1, 0, 0);
+    s.nrm.normalize();
+    s.bnm.crossVectors(s.tan, s.nrm).normalize();
+    for (let j = 0; j <= radial; j++) {
+      const v = (j / radial) * Math.PI * 2;
+      const cx = Math.cos(v);
+      const sy = Math.sin(v);
+      const idx = i * (radial + 1) + j;
+      const nx = cx * s.nrm.x + sy * s.bnm.x;
+      const ny = cx * s.nrm.y + sy * s.bnm.y;
+      const nz = cx * s.nrm.z + sy * s.bnm.z;
+      pos.setXYZ(idx, s.p0.x + nx * radius, s.p0.y + ny * radius, s.p0.z + nz * radius);
+      nor.setXYZ(idx, nx, ny, nz);
+    }
+  }
+  pos.needsUpdate = true;
+  nor.needsUpdate = true;
+  geom.computeBoundingSphere();
 }
 
 /* ————— 06 · Whitening — enamel brightens, naturally ————— */
