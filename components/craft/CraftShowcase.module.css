@@ -1,0 +1,165 @@
+.craft {
+  position: relative;
+  padding: clamp(110px, 16vh, 220px) 0 clamp(110px, 16vh, 220px);
+  background: var(--bg);
+}
+
+/* ————— header ————— */
+.head {
+  max-width: 940px;
+  margin-bottom: clamp(72px, 11vh, 160px);
+}
+.mark {
+  margin-bottom: 30px;
+}
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-title);
+  line-height: 1.0;
+  letter-spacing: -0.018em;
+  color: var(--espresso);
+  margin: 0 0 34px;
+}
+.headLine {
+  display: block;
+  overflow: hidden;
+  /* a touch of padding so descenders/blur aren't clipped by the mask */
+  padding-bottom: 0.06em;
+}
+.headLine > span {
+  display: block;
+  will-change: transform, filter;
+}
+.headMeta {
+  max-width: 540px;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  letter-spacing: 0.002em;
+  color: color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+/* ————— rows ————— */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(100px, 16vh, 230px);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(44px, 7vw, 120px);
+  width: min(1380px, 92vw);
+  margin: 0 auto;
+}
+.rowReverse {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.62fr);
+}
+.rowReverse .visual {
+  order: 2;
+}
+.rowReverse .info {
+  order: 1;
+}
+
+.visual {
+  min-width: 0;
+  will-change: transform, opacity;
+}
+.visualInner {
+  will-change: transform;
+}
+
+/* ————— supporting text (never the hero) ————— */
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px clamp(0px, 1.5vw, 28px);
+}
+.index {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  margin-bottom: 26px;
+  position: relative;
+  padding-left: 46px;
+}
+.index::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.55;
+}
+.serviceTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 3.1vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.016em;
+  color: var(--espresso);
+  margin: 0 0 24px;
+}
+.serviceCopy {
+  font-size: 1.05rem;
+  line-height: 1.78;
+  color: color-mix(in srgb, var(--ink) 68%, transparent);
+  max-width: 40ch;
+  margin: 0 0 38px;
+}
+
+/* elegant CTA — a word + a drawing underline, never a button */
+.cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--gold-deep);
+  text-decoration: none;
+  padding-bottom: 8px;
+}
+.ctaLine {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0.34);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-lux);
+}
+.cta:hover .ctaLine {
+  transform: scaleX(1);
+}
+
+/* ————— responsive: stack, image always first ————— */
+@media (max-width: 900px) {
+  .row,
+  .rowReverse {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    width: 92vw;
+  }
+  .rowReverse .visual {
+    order: 1;
+  }
+  .rowReverse .info {
+    order: 2;
+  }
+  .info {
+    padding: 0;
+  }
+  .serviceCopy {
+    margin-bottom: 26px;
+  }
+}

@@ -1,0 +1,45 @@
+/* The consultation visual stage — same premium, card-less presentation as the
+   Services showcase: the transparent treatment render floats directly on the
+   page with only a soft grounding shadow. No background, no rectangle. */
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: clamp(320px, 46vh, 560px);
+  /* generous breathing room so the subject never touches the column edges */
+  padding: clamp(16px, 2.6vw, 44px);
+}
+
+.layer {
+  position: absolute;
+  inset: clamp(16px, 2.6vw, 44px);
+  will-change: opacity, transform;
+}
+.before {
+  opacity: 1;
+  z-index: 1;
+}
+.after {
+  opacity: 0;
+  z-index: 2;
+}
+
+.img {
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  /* gentle grounding shadow cast by the subject silhouette (no card behind it) */
+  filter: drop-shadow(0 22px 42px rgba(40, 33, 24, 0.13))
+    drop-shadow(0 4px 12px rgba(40, 33, 24, 0.06));
+}
+
+@media (max-width: 1024px) {
+  .stage {
+    min-height: clamp(280px, 52vw, 460px);
+    padding: clamp(12px, 4vw, 28px);
+  }
+  .layer {
+    inset: clamp(12px, 4vw, 28px);
+  }
+}

@@ -363,11 +363,15 @@
   background: var(--gold-deep);
 }
 
-/* ——— right column: the single 3D subject ——— */
+/* ——— right column: the treatment before/after visual ——— */
 
 .canvasCol {
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 72px) clamp(20px, 3vw, 56px);
 }
 
 /* ——— responsive: stack (3D on top, controls below) ——— */

@@ -1,0 +1,270 @@
+.card {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+}
+
+/* The image stage. NO card, NO background, NO rectangle — the transparent
+   treatment render floats directly in the page. A fixed aspect ratio keeps
+   mismatched source sizes invisible; both image layers fit inside it
+   identically and are masked against each other so nothing bleeds through. */
+.frame {
+  /* cursor spotlight, driven from JS as eased custom props */
+  --mx: 50%; /* spotlight centre X within the frame */
+  --my: 50%; /* spotlight centre Y within the frame */
+  --r: 0px; /* spotlight radius in px (fixed physical size) */
+  --feather: 0.82; /* soft edge width, fraction of the radius (very soft) */
+  --lift: 0; /* 0..1 hover / focus elevation driver */
+  --hold: 0; /* 0..1 click-locked "fully revealed" driver */
+  --bloom: 0px; /* extra radius (px) for the click-locked full reveal */
+  --spot: 0; /* 0..1 spotlight presence (for halo/glow opacity) */
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  /* generous breathing room so the subject never touches the frame edges */
+  padding: clamp(18px, 3.4vw, 48px);
+  background: transparent;
+  transform: translateY(calc(var(--lift) * -12px));
+  transition: none;
+}
+
+.scaler {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 55%;
+  will-change: transform;
+}
+
+/* both layers share the exact same box + object-fit, guaranteeing alignment
+   regardless of the original image dimensions (no crop/stretch/rotate) */
+.layer {
+  position: absolute;
+  inset: clamp(18px, 3.4vw, 48px);
+}
+
+.img {
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  /* a soft grounding shadow cast by the subject silhouette itself, so the
+     floating treatment reads with quiet depth against the page (no card behind
+     it). Kept gentle and barely-moving on hover so it never reads as a cast
+     rectangle or container. */
+  filter: drop-shadow(
+      0 calc(22px + var(--lift) * 10px) calc(42px + var(--lift) * 18px)
+        rgba(40, 33, 24, calc(0.13 + var(--lift) * 0.03))
+    )
+    drop-shadow(0 4px 12px rgba(40, 33, 24, 0.06));
+}
+
+/* ————— the cursor spotlight reveal ————— */
+
+/* The spotlight is a soft-edged circle centred on the cursor. Its inner solid
+   radius and outer feathered radius are expressed as percentages of the
+   frame's larger axis (so it stays circular on any aspect ratio). --hold blooms
+   the radius out to engulf the whole image for the click-locked full reveal. */
+
+/* effective radius in px. --bloom (set on click) pushes it well past the frame
+   so the after image fills completely; the eased tween makes it "bloom" out. */
+.frame {
+  --_r: calc(var(--r) + var(--bloom));
+  --_inner: calc(var(--_r) * (1 - var(--feather)));
+  --_outer: var(--_r);
+}
+
+/* AFTER — visible ONLY inside the spotlight. At rest (--r 0, --hold 0) both
+   stops collapse to 0, so the after image is 100% invisible: not one pixel. */
+.after {
+  z-index: 2;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--mx) var(--my),
+    #000 var(--_inner),
+    transparent var(--_outer)
+  );
+  mask-image: radial-gradient(
+    circle at var(--mx) var(--my),
+    #000 var(--_inner),
+    transparent var(--_outer)
+  );
+  will-change: mask-image, -webkit-mask-image;
+}
+
+/* BEFORE — the exact inverse, so it is hidden precisely where the after shows
+   (no double-exposure of the two transparent renders). */
+.before {
+  z-index: 3;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--mx) var(--my),
+    transparent var(--_inner),
+    #000 var(--_outer)
+  );
+  mask-image: radial-gradient(
+    circle at var(--mx) var(--my),
+    transparent var(--_inner),
+    #000 var(--_outer)
+  );
+  will-change: mask-image, -webkit-mask-image;
+}
+
+/* cinematic light sweep — a soft diagonal sheen that crosses once on hover and
+   once on a full click-reveal */
+/* the sweep is a STATIC container clipped to the treatment silhouette; the
+   moving sheen lives in .sweepInner so the mask never travels with it (which
+   is what removes the faint rectangle the old strip tinted over the frame) */
+.sweep {
+  position: absolute;
+  inset: clamp(18px, 3.4vw, 48px);
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask-image: var(--subject);
+  mask-image: var(--subject);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.sweepInner {
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 55%;
+  height: 140%;
+  opacity: 0;
+  transform: skewX(-14deg);
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 45%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 55%,
+    transparent 100%
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* ————— the reveal trigger (a real button) ————— */
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 22px;
+  border-radius: 100px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(26, 22, 18, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 6px 24px rgba(20, 16, 12, 0.18),
+    0 0 0 rgba(191, 160, 96, 0);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.5s var(--ease-lux),
+    border-color 0.5s var(--ease-lux), box-shadow 0.5s var(--ease-lux),
+    transform 0.5s var(--ease-lux);
+}
+.hint:hover {
+  background: rgba(26, 22, 18, 0.5);
+  border-color: rgba(212, 184, 122, 0.6);
+  /* soft gold glow + subtle lift */
+  box-shadow: 0 10px 30px rgba(20, 16, 12, 0.26),
+    0 0 22px rgba(191, 160, 96, 0.32);
+  transform: translateX(-50%) translateY(-3px);
+}
+.hint:focus-visible {
+  outline: none;
+  border-color: rgba(212, 184, 122, 0.75);
+  box-shadow: 0 10px 30px rgba(20, 16, 12, 0.26),
+    0 0 0 3px rgba(191, 160, 96, 0.35);
+}
+.hint:active {
+  transform: translateX(-50%) translateY(-1px);
+}
+.hintLine {
+  width: 22px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.72);
+  transition: width 0.5s var(--ease-lux), background 0.5s var(--ease-lux);
+}
+.hint:hover .hintLine {
+  width: 30px;
+  background: rgba(212, 184, 122, 0.9);
+}
+.hintText {
+  line-height: 1;
+}
+.hintArrow {
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  transform: translateY(-0.5px);
+  transition: transform 0.5s var(--ease-lux);
+}
+.hint:hover .hintArrow {
+  transform: translate(3px, -0.5px);
+}
+
+/* Before / After state chips, cross-fading with the reveal state (--hold) */
+.stateLabel {
+  position: absolute;
+  top: 16px;
+  z-index: 6;
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #fff;
+  padding: 6px 13px;
+  border-radius: 100px;
+  background: rgba(26, 22, 18, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+.stateBefore {
+  left: 16px;
+  opacity: calc(1 - var(--hold));
+}
+.stateAfter {
+  right: 16px;
+  opacity: var(--hold);
+}
+
+@media (max-width: 900px) {
+  .frame {
+    aspect-ratio: 4 / 3;
+    padding: clamp(12px, 4vw, 28px);
+  }
+  .layer {
+    inset: clamp(12px, 4vw, 28px);
+  }
+  .hint {
+    bottom: 16px;
+    font-size: 0.64rem;
+    padding: 10px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep {
+    display: none;
+  }
+}

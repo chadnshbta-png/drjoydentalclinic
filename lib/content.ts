@@ -1,7 +1,6 @@
 /**
- * Single source of truth for site content.
- * Everything here is transcribed from the client-provided assets in /public
- * (content.txt, services/services.txt, location/Loaction.txt, Branding.json).
+ * Single source of truth for site content, transcribed from the
+ * client-provided brief and Branding.json.
  */
 
 export const brand = {
@@ -27,128 +26,6 @@ export const stats = [
   { value: 100, suffix: "+", label: "Renowned dentists, every speciality" },
   { value: 700, suffix: "K+", label: "Smiles entrusted to us" },
 ] as const;
-
-export const manifesto = [
-  "Since 2004, one belief has guided us —",
-  "a smile is not treated. It is composed.",
-  "Thirteen ateliers across Dubai. One hundred artisans of dentistry.",
-  "An in-house laboratory where every restoration is crafted, not ordered.",
-] as const;
-
-/** The six hero disciplines rendered as 3D studies. */
-export const vignettes = [
-  {
-    id: "aligners",
-    numeral: "01",
-    title: "Invisible Orthodontics",
-    services: ["Invisalign", "Invisalign First", "Myobrace"],
-    copy: "Clear aligners staged to the micron — each tray a quiet, deliberate movement toward alignment. Worn in public, noticed by no one.",
-    scene: "aligner",
-  },
-  {
-    id: "implants",
-    numeral: "02",
-    title: "Implantology",
-    services: ["Dental Implants", "Same Day Implants", "All-on-4", "All-on-6", "Ceramic Implants"],
-    copy: "Titanium and ceramic, engineered to become part of you. From single teeth to full arches — assembled with surgical precision.",
-    scene: "implant",
-  },
-  {
-    id: "veneers",
-    numeral: "03",
-    title: "Veneers & Smile Design",
-    services: ["Veneers", "Hollywood Smile Makeover", "Composite Bonding", "BioClear"],
-    copy: "Porcelain leaves, three-tenths of a millimetre thin, sculpted in our own laboratory and set like gemstones.",
-    scene: "veneer",
-  },
-  {
-    id: "digital",
-    numeral: "04",
-    title: "Digital Dentistry",
-    services: ["3D Guided Implant Surgery", "Digital Smile Design", "Laser Dentistry"],
-    copy: "Your smile, scanned to a cloud of a million points. We rehearse the result digitally before a single instrument is lifted.",
-    scene: "scan",
-  },
-  {
-    id: "orthodontics",
-    numeral: "05",
-    title: "Orthodontics",
-    services: ["Damon Braces", "Lingual Braces", "Metal & Ceramic Braces", "Orthognathic Surgery"],
-    copy: "The physics of a perfect arch — calibrated tension, patiently applied, by specialists who have shaped thousands of smiles.",
-    scene: "ortho",
-  },
-  {
-    id: "cosmetic",
-    numeral: "06",
-    title: "Whitening & Cosmetics",
-    services: ["Zoom Whitening", "Home Whitening", "Gum Contouring", "Cosmetic Dentistry"],
-    copy: "Light, chemistry and restraint. Brightness that reads as health, never as artifice.",
-    scene: "whitening",
-  },
-] as const;
-
-/** Full index — all 37 services from services.txt, grouped as the ledger. */
-export const serviceLedger: { group: string; items: string[] }[] = [
-  {
-    group: "Align",
-    items: [
-      "Invisalign",
-      "Invisalign First",
-      "Orthodontic Braces",
-      "Metal and Ceramic Braces",
-      "Lingual Braces",
-      "Damon Braces",
-      "Myobrace",
-      "Orthognathic Surgery",
-    ],
-  },
-  {
-    group: "Restore",
-    items: [
-      "Dental Implants",
-      "Same Day Dental Implants",
-      "3D Guided Implant Surgery",
-      "All-on-4 Implants",
-      "All-on-6 Implants",
-      "Ceramic Dental Implants",
-      "Dental Bridges and Crowns",
-      "Root Canal Treatment",
-      "Dental Fillings",
-      "Smart Amalgam Removal",
-    ],
-  },
-  {
-    group: "Design",
-    items: [
-      "Veneers",
-      "Hollywood Smile Makeover",
-      "Digital Smile Design",
-      "Cosmetic Dentistry",
-      "Composite Bonding",
-      "BioClear Black Triangle Treatment",
-      "Teeth Whitening",
-      "Zoom Teeth Whitening",
-      "Home Teeth Whitening",
-      "Gum Depigmentation",
-      "Gummy Smile Treatment",
-    ],
-  },
-  {
-    group: "Care",
-    items: [
-      "Pediatric Dentistry",
-      "Sedation Dentistry",
-      "Biological Dentistry",
-      "Laser Dentistry",
-      "TMJ Treatment",
-      "Sleep Apnea and Snoring",
-      "Gum Disease Treatment",
-      "Routine Dental Checkup",
-      "Teeth Cleaning",
-      "Wisdom Tooth Extraction",
-    ],
-  },
-];
 
 export interface Clinic {
   name: string;
@@ -299,17 +176,6 @@ export const testimonials = [
   },
 ] as const;
 
-export const specialties = [
-  { field: "Prosthodontics & Implantology", note: "Led by Dr. Ahmed El Sayed, Dr. Laiju Abdulla, Dr. Smitha Jacob" },
-  { field: "Orthodontics", note: "Led by Dr. Rana Muwahid, Dr. Mahsa Mortazavi, Dr. Vivek Bhaskar" },
-  { field: "Pediatric Dentistry", note: "Led by Dr. Mandeep Singh Jolly, Dr. Sapna Hegde" },
-  { field: "Oral & Maxillofacial Surgery", note: "Led by Dr. Gagan Sabharwal, Dr. Salah Mahaini" },
-  { field: "Endodontics", note: "Led by Dr. Marjan Dorkhan, Dr. Yazan Bizreh" },
-  { field: "Periodontics & Hygiene", note: "Led by Dr. Dina Zakaria and our hygiene team" },
-  { field: "TMJ & Sleep Medicine", note: "Led by Dr. Jocelyne Charest" },
-  { field: "Cosmetic & General Dentistry", note: "Dr. Calum Tevendale, Dr. Samar AlKurd and 40+ clinicians" },
-] as const;
-
 export const founder = {
   name: "Dr. Joy Antony",
   role: "Founder & CEO",
@@ -319,14 +185,6 @@ export const founder = {
 export const insurers = [
   "Almadallah", "AXA", "Nextcare", "Mednet", "Sukoon",
   "SAICO", "NAS", "NGI", "MSH", "ADNIC",
-] as const;
-
-/** Chapter II — typed sentence by sentence beneath the revealed hero image. */
-export const legacyStory = [
-  "Since 2004, one belief has guided us — a smile is not treated. It is composed.",
-  "Thirteen ateliers across Dubai. One hundred artisans of dentistry.",
-  "An in-house laboratory of our own, where every restoration is crafted — never ordered.",
-  "Recognised with the Superbrands award. Entrusted with seven hundred thousand smiles.",
 ] as const;
 
 /** Chapter VI — the founder's timeline. Only anchored to facts we can stand behind. */
@@ -345,77 +203,6 @@ export const ethos = [
   "We listen before we ever lift an instrument.",
   "Crafted in our own hands — never ordered out.",
 ] as const;
-
-/**
- * Chapter VI — the clinician constellation. Counts approximate the 100+ team;
- * names are the real specialists named across the practice.
- */
-export interface Cluster {
-  field: string;
-  short: string;
-  count: number;
-  leads: string[];
-  pos: [number, number]; // normalised position on the constellation stage
-}
-
-export const clinicianClusters: Cluster[] = [
-  {
-    field: "Cosmetic & General Dentistry",
-    short: "Cosmetic & General",
-    count: 34,
-    leads: ["Dr. Calum Tevendale", "Dr. Samar AlKurd", "Dr. Jay Handa", "Dr. Mina Aziz"],
-    pos: [0.5, 0.64],
-  },
-  {
-    field: "Prosthodontics & Implantology",
-    short: "Prostho & Implants",
-    count: 16,
-    leads: ["Dr. Ahmed El Sayed", "Dr. Laiju Abdulla", "Dr. Smitha Jacob"],
-    pos: [0.22, 0.3],
-  },
-  {
-    field: "Orthodontics",
-    short: "Orthodontics",
-    count: 12,
-    leads: ["Dr. Rana Muwahid", "Dr. Mahsa Mortazavi", "Dr. Vivek Bhaskar"],
-    pos: [0.78, 0.27],
-  },
-  {
-    field: "Pediatric Dentistry",
-    short: "Pediatric",
-    count: 10,
-    leads: ["Dr. Mandeep Singh Jolly", "Dr. Sapna Hegde", "Dr. Duaa Mustafa"],
-    pos: [0.15, 0.68],
-  },
-  {
-    field: "Oral & Maxillofacial Surgery",
-    short: "Maxillofacial Surgery",
-    count: 8,
-    leads: ["Dr. Gagan Sabharwal", "Dr. Salah Mahaini", "Dr. Kamila Akieva"],
-    pos: [0.85, 0.67],
-  },
-  {
-    field: "Periodontics & Hygiene",
-    short: "Perio & Hygiene",
-    count: 9,
-    leads: ["Dr. Dina Zakaria", "Dr. Chyrel Salian", "Faith Isayed"],
-    pos: [0.63, 0.83],
-  },
-  {
-    field: "Endodontics",
-    short: "Endodontics",
-    count: 7,
-    leads: ["Dr. Marjan Dorkhan", "Dr. Yazan Bizreh"],
-    pos: [0.37, 0.82],
-  },
-  {
-    field: "TMJ & Sleep Medicine",
-    short: "TMJ & Sleep",
-    count: 4,
-    leads: ["Dr. Jocelyne Charest"],
-    pos: [0.5, 0.14],
-  },
-];
 
 export const FRAME_COUNT = 719;
 export const frameSrc = (i: number) => `/frame/farmes (${i + 1}).webp`;

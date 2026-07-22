@@ -25,13 +25,28 @@ const HERO_BG = "#e9e4db";
 
 // Gentle overscan + crop bias, keeping the left-weighted subject and pushing
 // the source's bottom-right sparkle watermark toward the corner. A per-frame
-// clone patch (below) erases whatever remains.
-const ZOOM = 1.06;
+// background-matched patch (below) then erases whatever remains — this is what
+// guarantees the mark is never visible, since a 16:9 source in a ~16:9 viewport
+// simply can't be cropped enough to push the mark off-screen without shoving
+// the subject badly off-centre.
+const ZOOM = 1.08;
 const BIAS_X = 0.38;
 const BIAS_Y = 0.3;
 
-// Source-normalised watermark box + where to sample clean backdrop from.
-const WM = { cx: 0.905, cy: 0.837, w: 0.12, h: 0.15 };
+// The actual sparkle watermark, measured from the frames (center ≈ 0.906, 0.833,
+// ~0.037 × 0.063 of the frame). The erase box below is drawn generously larger
+// so the whole glow, not just the star, is always covered.
+const WM = { cx: 0.906, cy: 0.833 };
+// Erase radius as a fraction of the frame — snug around the measured sparkle
+// (~0.037 × 0.063) with margin, but small + heavily feathered so on the late
+// frames where the subject reaches this corner it dissolves invisibly instead
+// of leaving a flat disc.
+const WM_RX = 0.05;
+const WM_RY = 0.075;
+// A clean corner patch (always flat greige on every frame) whose average colour
+// we paint the erase with, so the fill matches the local backdrop exactly even
+// as the film's exposure drifts.
+const WM_SAMPLE = { x: 0.965, y: 0.9, w: 0.03, h: 0.06 };
 
 export default function HeroFilm() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -46,6 +61,23 @@ export default function HeroFilm() {
       const ctx = canvas.getContext("2d", { alpha: false })!;
       const film = getFilm();
       film.start();
+
+      // 1×1 offscreen used to read the average colour of a clean corner patch
+      // each frame (a single tiny getImageData — cheap), so the watermark erase
+      // always matches the local backdrop as the film's exposure drifts.
+      const sampleCanvas = document.createElement("canvas");
+      sampleCanvas.width = 1;
+      sampleCanvas.height = 1;
+      const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true })!;
+      const sampleBg = (frame: CanvasImageSource, iw: number, ih: number) => {
+        sampleCtx.drawImage(
+          frame,
+          WM_SAMPLE.x * iw, WM_SAMPLE.y * ih, WM_SAMPLE.w * iw, WM_SAMPLE.h * ih,
+          0, 0, 1, 1
+        );
+        const [r, g, b] = sampleCtx.getImageData(0, 0, 1, 1).data;
+        return `rgb(${r}, ${g}, ${b})`;
+      };
 
       let target = 0;
       let playhead = 0;
@@ -79,23 +111,22 @@ export default function HeroFilm() {
         ctx.fillRect(0, 0, cw, ch);
         ctx.drawImage(frame, dx, dy, dw, dh);
 
-        // Erase the sparkle watermark: clone a clean patch from just left of it
-        // over the mark, softly blurred so the seam disappears.
-        const wmw = WM.w * iw;
-        const wmh = WM.h * ih;
-        const wx = WM.cx * iw - wmw / 2;
-        const wy = WM.cy * ih - wmh / 2;
-        const sx = wx - wmw - 0.015 * iw; // clean sample to the left
-        ctx.save();
-        ctx.filter = "blur(6px)";
-        ctx.globalAlpha = 0.98;
-        ctx.drawImage(
-          frame,
-          Math.max(0, sx), wy, wmw, wmh,
-          dx + wx * scale - 6, dy + wy * scale - 6,
-          wmw * scale + 12, wmh * scale + 12
-        );
-        ctx.restore();
+        // Erase the sparkle watermark: paint a soft-edged patch of the local
+        // backdrop colour (sampled from a clean corner) over it. A feathered
+        // radial gradient dissolves the seam into the surrounding greige, so the
+        // mark is gone on every frame without ever importing subject pixels.
+        const bg = sampleBg(frame, iw, ih);
+        const wcx = dx + WM.cx * iw * scale;
+        const wcy = dy + WM.cy * ih * scale;
+        // radius that comfortably covers the sparkle's full glow in both axes
+        const r = Math.max(WM_RX * iw, WM_RY * ih) * scale;
+        const grad = ctx.createRadialGradient(wcx, wcy, 0, wcx, wcy, r);
+        const bgT = bg.replace("rgb(", "rgba(").replace(")", ", 0)");
+        grad.addColorStop(0, bg);
+        grad.addColorStop(0.42, bg); // solid core fully hides the star
+        grad.addColorStop(1, bgT); // long feathered edge dissolves into the backdrop
+        ctx.fillStyle = grad;
+        ctx.fillRect(wcx - r, wcy - r, r * 2, r * 2);
       };
 
       const loop = () => {

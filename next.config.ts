@@ -10,12 +10,12 @@ const nextConfig: NextConfig = {
   compress: true,
   async headers() {
     return [
-      // The hero film + content photography never change between deploys —
-      // cache them for a year so repeat visits never re-download a byte.
+      // The hero film + treatment/location photography never change between
+      // deploys — cache them for a year so repeat visits never re-download a byte.
       { source: "/frame/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
       { source: "/location/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
-      { source: "/images/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
-      { source: "/models/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
+      { source: "/services/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
+      { source: "/A Personal Consultation/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
       {
         // The logo/favicon could conceivably change under the same name —
         // cache long but let it revalidate rather than lock it forever.
