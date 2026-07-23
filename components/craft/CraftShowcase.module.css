@@ -2,6 +2,55 @@
   position: relative;
   padding: clamp(110px, 16vh, 220px) 0 clamp(110px, 16vh, 220px);
   background: var(--bg);
+  isolation: isolate;
+}
+
+/* ————————————————————————————————————————————————————————————
+   DESKTOP-ONLY atmosphere. Everything below (≥901px) adds depth without a
+   single rectangle behind the transparent renders: a warm ivory wash, two
+   very large blurred radial highlights that pool light into the composition,
+   and a whisper-faint vertical hairline for editorial structure. Mobile keeps
+   the flat --bg background untouched.
+   ———————————————————————————————————————————————————————————— */
+@media (min-width: 901px) {
+  .craft {
+    /* a soft ivory-into-white vertical wash — the page stops feeling clinical */
+    background:
+      linear-gradient(180deg, var(--ivory) 0%, var(--bg) 26%, var(--bg) 74%, var(--ivory) 100%);
+  }
+
+  /* two soft radial pools of warm light — large, heavily feathered, behind
+     everything (z -2). They give the white air a sense of lit depth. */
+  .craft::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+      radial-gradient(52% 42% at 18% 22%, rgba(214, 197, 158, 0.16), transparent 62%),
+      radial-gradient(46% 46% at 86% 74%, rgba(201, 178, 140, 0.13), transparent 66%);
+  }
+
+  /* a single faint gold hairline running down the centreline — a quiet spine
+     the alternating rows compose around (editorial structure, barely there) */
+  .craft::after {
+    content: "";
+    position: absolute;
+    top: clamp(140px, 22vh, 300px);
+    bottom: clamp(140px, 22vh, 300px);
+    left: 50%;
+    width: 1px;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(172, 139, 81, 0.14) 18%,
+      rgba(172, 139, 81, 0.14) 82%,
+      transparent 100%
+    );
+  }
 }
 
 /* ————— header ————— */
@@ -19,6 +68,87 @@
   letter-spacing: -0.018em;
   color: var(--espresso);
   margin: 0 0 34px;
+}
+
+/* the oversized chapter numeral — an editorial watermark that fills the empty
+   half of the intro and anchors the eye. Desktop-only; hidden on mobile. */
+.headNumeral {
+  display: none;
+}
+
+/* ———— DESKTOP editorial intro (≥901px) ————
+   Tighten the intro into a magazine masthead: the label, heading and standfirst
+   read as one composed block, with a large faded "III" set into the open space
+   on the right so the title area never feels isolated. */
+@media (min-width: 901px) {
+  .head {
+    position: relative;
+    /* span the study width so the intro reads as the same spread as the rows;
+       the text keeps its own readable measure via .headInner below */
+    max-width: none;
+    width: min(1380px, 92vw);
+    margin-inline: auto;
+    /* pull the first card up closer — the intro and the opening study now feel
+       part of one spread rather than two disconnected screens */
+    margin-bottom: clamp(56px, 7vh, 104px);
+    padding-bottom: clamp(34px, 4vh, 56px);
+  }
+
+  /* the text column keeps an editorial measure while the numeral fills the
+     open right side */
+  .headInner {
+    max-width: 760px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* a hairline drawn beneath the standfirst — the classic editorial rule that
+     closes the masthead and hands off to the studies below */
+  .head::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: clamp(180px, 22vw, 320px);
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold) 0%, rgba(172, 139, 81, 0.12) 100%);
+  }
+
+  .mark {
+    margin-bottom: clamp(22px, 2.4vh, 34px);
+  }
+
+  .title {
+    /* a touch more line height so the two lines breathe as a headline */
+    line-height: 1.03;
+    margin-bottom: clamp(24px, 2.6vh, 34px);
+  }
+
+  .headMeta {
+    /* nudge the standfirst in from the heading's left edge — a subtle indent
+       is a quiet editorial signal of hierarchy */
+    padding-left: clamp(0px, 3vw, 52px);
+    border-left: 1px solid rgba(172, 139, 81, 0.22);
+    margin-left: 2px;
+  }
+
+  .headNumeral {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: clamp(-8px, 1vw, 24px);
+    translate: 0 -50%;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(9rem, 15vw, 17rem);
+    line-height: 0.8;
+    letter-spacing: 0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(172, 139, 81, 0.16);
+    pointer-events: none;
+    user-select: none;
+    z-index: -1;
+  }
 }
 .headLine {
   display: block;
@@ -53,6 +183,72 @@
   width: min(1380px, 92vw);
   margin: 0 auto;
 }
+
+/* ———— DESKTOP row rhythm + depth (≥901px) ————
+   Calmer, closer spacing so the studies feel like a connected sequence, and a
+   soft pool of light behind each subject so the floating render sits in lit
+   depth (a feathered radial — a glow, never a rectangle/card). */
+@media (min-width: 901px) {
+  .rows {
+    gap: clamp(96px, 13vh, 168px);
+  }
+
+  .row {
+    position: relative;
+  }
+
+  /* the subject's pool of light — a large feathered radial centred on the
+     visual column. Because it is a soft circle it reads as ambient light on
+     the page, not a container behind the transparent PNG. */
+  .visual {
+    position: relative;
+  }
+  .visual::before {
+    content: "";
+    position: absolute;
+    inset: -12% -6%;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      58% 52% at 50% 54%,
+      rgba(214, 197, 158, 0.2),
+      rgba(214, 197, 158, 0.07) 46%,
+      transparent 72%
+    );
+  }
+
+  /* text↔image connection: a large faded numeral set behind the copy, bleeding
+     toward the image so the two halves read as one composition. It sits on the
+     info side, low-opacity, purely atmospheric. */
+  .info {
+    position: relative;
+    padding-block: clamp(8px, 2vh, 24px);
+  }
+  .info::before {
+    content: attr(data-index);
+    position: absolute;
+    top: 50%;
+    left: -0.14em;
+    translate: 0 -54%;
+    z-index: -1;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(11rem, 17vw, 20rem);
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(172, 139, 81, 0.09);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+  }
+  /* on reversed rows the numeral leans the other way, toward the image on the
+     right, keeping the two sides visually tied */
+  .rowReverse .info::before {
+    left: auto;
+    right: -0.14em;
+  }
+}
+
 .rowReverse {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.62fr);
 }

@@ -27,6 +27,74 @@ export const stats = [
   { value: 700, suffix: "K+", label: "Smiles entrusted to us" },
 ] as const;
 
+/**
+ * The Living Index — every treatment offered, grouped into four disciplines.
+ * Source of truth: the clinic's live Services page (public/services.txt); all
+ * 39 treatments are the exact card titles from that page, organised into the
+ * Align / Restore / Design / Care disciplines the tree branches into.
+ */
+export const serviceLedger: { group: string; items: string[] }[] = [
+  {
+    group: "Align",
+    items: [
+      "Invisalign",
+      "Invisalign First",
+      "Orthodontic Braces",
+      "Metal and Ceramic Braces",
+      "Lingual Braces",
+      "Damon Braces",
+      "Myobrace",
+      "Orthognathic Surgery",
+    ],
+  },
+  {
+    group: "Restore",
+    items: [
+      "Dental Implants",
+      "Same Day Dental Implants",
+      "3D Guided Implant Surgery",
+      "All-on-4 Implants",
+      "All-on-6 Implants",
+      "Ceramic Dental Implants",
+      "Dental Bridges and Crowns",
+      "Root Canal Treatment",
+      "Dental Fillings",
+      "Smart Amalgam Removal",
+    ],
+  },
+  {
+    group: "Design",
+    items: [
+      "Veneers",
+      "Hollywood Smile Makeover",
+      "Digital Smile Design",
+      "Cosmetic Dentistry",
+      "Composite Bonding",
+      "BioClear Black Triangle Treatment",
+      "Teeth Whitening",
+      "Zoom Teeth Whitening",
+      "Home Teeth Whitening",
+      "Gum Depigmentation",
+      "Gummy Smile Treatment",
+    ],
+  },
+  {
+    group: "Care",
+    items: [
+      "Pediatric Dentistry",
+      "Sedation Dentistry",
+      "Biological Dentistry",
+      "Laser Dentistry",
+      "TMJ Treatment",
+      "Sleep Apnea and Snoring",
+      "Gum Disease Treatment",
+      "Routine Dental Checkup",
+      "Teeth Cleaning",
+      "Wisdom Tooth Extraction",
+    ],
+  },
+];
+
 export interface Clinic {
   name: string;
   short: string;

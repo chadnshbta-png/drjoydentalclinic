@@ -28,6 +28,17 @@ import styles from "./RevealCard.module.css";
  * during pointer movement, so the component never re-renders while animating.
  */
 
+// For these treatments the reveal is inverted: the FINAL result is shown at
+// rest (front) and the spotlight uncovers the BEFORE state underneath — the
+// opposite of the default (front = before, reveal = after). Invisible
+// Orthodontics keeps the default order. Matched by folder slug.
+const REVERSED_SLUGS = new Set([
+  "Implantology",
+  "Veneers & Smile Design",
+  "Digital Dentistry",
+  "Orthodontics",
+]);
+
 // spotlight radius as a fraction of the frame's larger axis
 const RADIUS_FRACTION = 0.34;
 // soft edge as a fraction of the radius (0 = hard, 1 = fully feathered)
@@ -296,6 +307,21 @@ export default function RevealCard({
     [toggleHeld]
   );
 
+  // Resolve which render sits on the FRONT (visible at rest) and which the
+  // spotlight uncovers. Default: front = before, reveal = after. For the
+  // reversed treatments these swap, so the front shows the final result and the
+  // spotlight uncovers the before. The mask/silhouette always follows whatever
+  // is on the front layer.
+  const reversed = REVERSED_SLUGS.has(service.slug);
+  const frontSrc = reversed ? service.after : service.before;
+  const revealSrc = reversed ? service.before : service.after;
+  const frontAlt = reversed
+    ? `${service.title} — result`
+    : `${service.title} — before`;
+  const revealAlt = reversed
+    ? `${service.title} — before`
+    : `${service.title} — after`;
+
   return (
     <article
       ref={rootRef}
@@ -311,18 +337,18 @@ export default function RevealCard({
         className={styles.frame}
         style={
           {
-            // the subject silhouette, used to clip the sheen/halo so they only
-            // paint on the treatment itself and never tint the empty frame
-            "--subject": `url("${service.before}")`,
+            // the front-layer silhouette, used to clip the sheen/halo so they
+            // only paint on the treatment itself and never tint the empty frame
+            "--subject": `url("${frontSrc}")`,
           } as React.CSSProperties
         }
       >
         <div ref={scaleRef} className={styles.scaler}>
-          {/* AFTER — masked to the cursor spotlight; invisible at rest */}
+          {/* REVEAL layer — masked to the cursor spotlight; invisible at rest */}
           <div className={`${styles.layer} ${styles.after}`}>
             <Image
-              src={service.after}
-              alt={`${service.title} — after`}
+              src={revealSrc}
+              alt={revealAlt}
               fill
               sizes="(max-width: 900px) 92vw, 60vw"
               className={styles.img}
@@ -331,11 +357,11 @@ export default function RevealCard({
             />
           </div>
 
-          {/* BEFORE — the inverse mask; hidden exactly under the spotlight */}
+          {/* FRONT layer — the inverse mask; hidden exactly under the spotlight */}
           <div className={`${styles.layer} ${styles.before}`}>
             <Image
-              src={service.before}
-              alt={`${service.title} — before`}
+              src={frontSrc}
+              alt={frontAlt}
               fill
               sizes="(max-width: 900px) 92vw, 60vw"
               className={styles.img}
@@ -359,24 +385,16 @@ export default function RevealCard({
           aria-pressed={held}
           aria-label={
             held
-              ? `Hide the result for ${service.title}`
-              : `Reveal the result for ${service.title}`
+              ? `Return to the final result for ${service.title}`
+              : `See the difference for ${service.title}`
           }
         >
           <span className={styles.hintLine} />
           <span className={styles.hintText}>
-            {held ? "Hide result" : "Reveal the result"}
+            {held ? "View Final Result" : "See the Difference"}
           </span>
-          <span className={styles.hintArrow}>{held ? "×" : "→"}</span>
+          <span className={styles.hintArrow}>{held ? "↩" : "→"}</span>
         </button>
-
-        {/* before/after state labels */}
-        <span className={`${styles.stateLabel} ${styles.stateBefore}`}>
-          Before
-        </span>
-        <span className={`${styles.stateLabel} ${styles.stateAfter}`}>
-          After
-        </span>
       </div>
     </article>
   );

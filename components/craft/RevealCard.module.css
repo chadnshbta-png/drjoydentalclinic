@@ -287,6 +287,47 @@
   }
 }
 
+/* ———— DESKTOP premium card presentation (≥901px) ————
+   The floating render is treated like a product on a lit plinth: a deeper,
+   two-stage grounding shadow that grows gracefully on hover, and a slightly
+   more generous frame so the subject has room to breathe. Interaction, masks
+   and layout are all unchanged — this is purely how the subject is lit and
+   shadowed. */
+@media (min-width: 901px) {
+  .frame {
+    padding: clamp(28px, 3.6vw, 56px);
+  }
+  .layer {
+    inset: clamp(28px, 3.6vw, 56px);
+  }
+  .sweep {
+    inset: clamp(28px, 3.6vw, 56px);
+  }
+
+  /* richer, layered plinth shadow — a soft close contact shadow + a deep, wide
+     ambient one, both cast from the subject silhouette (drop-shadow, not a box)
+     so depth reads without ever showing a rectangle */
+  .img {
+    filter: drop-shadow(
+        0 calc(30px + var(--lift) * 16px) calc(60px + var(--lift) * 26px)
+          rgba(40, 33, 24, calc(0.16 + var(--lift) * 0.05))
+      )
+      drop-shadow(0 8px 22px rgba(40, 33, 24, 0.08))
+      drop-shadow(0 2px 4px rgba(40, 33, 24, 0.05));
+  }
+
+  /* the subject rises a touch more on hover for a tactile, product-lifting feel */
+  .frame {
+    transform: translateY(calc(var(--lift) * -16px));
+  }
+
+  /* refine the reveal pill — a hair more presence, softer glass */
+  .hint {
+    padding: 13px 24px;
+    letter-spacing: 0.22em;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sweep {
     display: none;

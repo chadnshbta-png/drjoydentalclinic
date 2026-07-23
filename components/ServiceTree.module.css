@@ -1,0 +1,306 @@
+.wrap {
+  position: relative;
+  z-index: 2;
+  padding: clamp(60px, 10vh, 130px) 0 clamp(70px, 12vh, 150px);
+}
+
+/* ——— heading — asymmetric split ——— */
+
+.head {
+  width: min(1280px, 100% - var(--gutter) * 2);
+  margin-inline: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+  margin-bottom: clamp(16px, 3vh, 36px);
+}
+
+.headKicker {
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.headTitle {
+  margin-top: calc(var(--u) * 4);
+  font-size: clamp(1.7rem, 3.4vw, 3rem);
+  color: var(--ink);
+  line-height: 1.16;
+}
+
+.headHint {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 3);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  font-weight: 600;
+  padding-bottom: calc(var(--u) * 2);
+  white-space: nowrap;
+}
+
+.headHint i {
+  width: calc(var(--u) * 14);
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+/* ——— radial stage ——— */
+
+.stage {
+  position: relative;
+  height: max(94vh, 760px);
+  overflow: clip;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.trunk,
+.branchOn {
+  fill: none;
+  stroke: var(--gold-light);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+.branchOn {
+  stroke-width: 0.8;
+  opacity: 0.45;
+}
+
+/* the heart node */
+.heart {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 2.5);
+  padding: calc(var(--u) * 3.5) calc(var(--u) * 6);
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background:
+    radial-gradient(120% 160% at 30% 20%, rgba(255, 255, 255, 0.9), rgba(250, 246, 238, 0.65)),
+    var(--ivory);
+  box-shadow:
+    0 24px 50px -26px rgba(149, 120, 70, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gold-deep);
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.heart em {
+  font-style: normal;
+  color: var(--gold);
+  animation: heartbeat 3s var(--ease-lux) infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.7; }
+}
+
+/* discipline nodes — compact chips in a tidy top row */
+.cat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: calc(var(--u) * 3) calc(var(--u) * 4.5);
+  border-radius: calc(var(--radius) * 3);
+  border: 1px solid var(--hairline);
+  background: rgba(254, 254, 254, 0.85);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  z-index: 3;
+  text-align: center;
+  transition: border-color 0.45s, box-shadow 0.45s, background 0.45s;
+}
+
+.cat strong {
+  font-family: var(--font-heading);
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  font-weight: 500;
+  color: var(--ink);
+  transition: color 0.4s;
+}
+
+.cat span {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cat:hover,
+.catOn {
+  border-color: var(--gold);
+  background: rgba(254, 254, 254, 0.96);
+  box-shadow:
+    0 22px 48px -24px rgba(149, 120, 70, 0.55),
+    0 0 0 4px rgba(172, 139, 81, 0.07);
+}
+
+.catOn strong {
+  color: var(--gold-deep);
+}
+
+/* count badge on each discipline node */
+.catCount {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--bg);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  box-shadow: 0 8px 18px -8px rgba(149, 120, 70, 0.7);
+}
+
+/* treatment leaves */
+.leafOn {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  will-change: transform;
+}
+
+.leafOn span {
+  display: inline-block;
+  padding: 8px 17px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(254, 254, 254, 0.92);
+  backdrop-filter: blur(4px);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  box-shadow: 0 10px 24px -18px rgba(105, 82, 46, 0.5);
+  transition: border-color 0.35s, color 0.35s, box-shadow 0.45s;
+  will-change: opacity, transform;
+  cursor: default;
+}
+
+.leafOn span:hover {
+  border-color: var(--gold);
+  color: var(--gold-deep);
+  box-shadow: 0 0 0 4px rgba(172, 139, 81, 0.08), 0 14px 30px -16px rgba(149, 120, 70, 0.55);
+}
+
+/* ——— stacked mode (small screens) ——— */
+
+.stack {
+  width: min(1280px, 100% - var(--gutter) * 2);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--hairline);
+}
+
+.stackGroup {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.stackCat {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 5) 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.stackCat strong {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.stackCatOn strong {
+  color: var(--gold-deep);
+}
+
+.stackCat span {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.stackCat i {
+  font-style: normal;
+  color: var(--gold);
+  font-size: 1.2rem;
+}
+
+.stackLeaves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--u) * 2);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.7s var(--ease-lux), padding 0.5s;
+}
+
+.stackLeavesOn {
+  max-height: 640px;
+  padding-bottom: calc(var(--u) * 6);
+}
+
+.stackLeaves span {
+  padding: calc(var(--u) * 1.75) calc(var(--u) * 3.5);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: rgba(254, 254, 254, 0.85);
+  font-size: 12px;
+  color: var(--ink);
+}
+
+@media (max-width: 1080px) {
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  /* on the stacked head the hint sits on its own line — let it wrap so the
+     longer copy never runs past the viewport edge on a phone */
+  .headHint {
+    white-space: normal;
+  }
+  .headHint i {
+    display: none;
+  }
+}

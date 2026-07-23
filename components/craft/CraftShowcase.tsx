@@ -54,43 +54,83 @@ export default function CraftShowcase({ services }: { services: Service[] }) {
         scrollTrigger: { trigger: `.${styles.head}`, start: "top 72%", once: true },
       });
 
-      // Each row choreographs its own entrance: the image floats up with a
-      // subtle scale + fade, and the supporting text staggers in beside it.
-      gsap.utils.toArray<HTMLElement>(`.${styles.row}`).forEach((row) => {
-        const visual = row.querySelector(`.${styles.visual}`);
-        const textBits = row.querySelectorAll(`.${styles.info} > *`);
+      const mm = gsap.matchMedia();
 
-        const tl = gsap.timeline({
-          defaults: { ease: "power3.out" },
-          scrollTrigger: { trigger: row, start: "top 78%", once: true },
-        });
-
-        if (visual)
-          tl.from(
-            visual,
-            {
+      // ——— MOBILE / base entrance (≤900px) — the existing, proven choreography,
+      // left exactly as it was so the mobile experience is unchanged. ———
+      mm.add("(max-width: 900px)", () => {
+        gsap.utils.toArray<HTMLElement>(`.${styles.row}`).forEach((row) => {
+          const visual = row.querySelector(`.${styles.visual}`);
+          const textBits = row.querySelectorAll(`.${styles.info} > *`);
+          const tl = gsap.timeline({
+            defaults: { ease: "power3.out" },
+            scrollTrigger: { trigger: row, start: "top 78%", once: true },
+          });
+          if (visual)
+            tl.from(visual, {
               autoAlpha: 0,
               yPercent: 9,
               scale: 0.93,
               duration: 1.4,
               ease: "expo.out",
               transformOrigin: "50% 65%",
-            },
-            0
-          );
-
-        if (textBits.length)
-          tl.from(
-            textBits,
-            {
+            }, 0);
+          if (textBits.length)
+            tl.from(textBits, {
               autoAlpha: 0,
               y: 34,
               duration: 1.05,
               ease: "power3.out",
               stagger: 0.12,
-            },
-            0.22
-          );
+            }, 0.22);
+        });
+      });
+
+      // ——— DESKTOP cinematic entrance (≥901px) — each study arrives like a new
+      // chapter: its ambient light pools in first, the subject rises and settles
+      // on its plinth with a longer, calmer float, and the copy resolves beside
+      // it with a soft blur-clear. Slower, quieter, more deliberate. ———
+      mm.add("(min-width: 901px)", () => {
+        gsap.utils.toArray<HTMLElement>(`.${styles.row}`).forEach((row) => {
+          const visual = row.querySelector(`.${styles.visual}`);
+          const glow = row.querySelector(`.${styles.visual}`); // ::before glow rides on .visual
+          const textBits = row.querySelectorAll(`.${styles.info} > *`);
+
+          const tl = gsap.timeline({
+            defaults: { ease: "power3.out" },
+            scrollTrigger: { trigger: row, start: "top 80%", once: true },
+          });
+
+          // the light pools in first — the chapter is lit before the subject
+          // appears (opacity on the whole visual, which carries the ::before glow)
+          if (glow)
+            tl.from(glow, { autoAlpha: 0, duration: 1.1, ease: "power2.out" }, 0);
+
+          // the subject rises onto its plinth — a longer, gentler settle
+          if (visual)
+            tl.from(visual, {
+              yPercent: 12,
+              scale: 0.9,
+              filter: prefersReduced ? "blur(0px)" : "blur(6px)",
+              duration: 1.8,
+              ease: "expo.out",
+              transformOrigin: "50% 68%",
+              clearProps: "filter",
+            }, 0.05);
+
+          // the copy resolves beside it, a beat later, with a soft blur-clear so
+          // the words focus in rather than simply sliding
+          if (textBits.length)
+            tl.from(textBits, {
+              autoAlpha: 0,
+              y: 40,
+              filter: prefersReduced ? "blur(0px)" : "blur(6px)",
+              duration: 1.2,
+              ease: "power3.out",
+              stagger: 0.14,
+              clearProps: "filter",
+            }, 0.34);
+        });
       });
 
       // Subtle image parallax — the inner wrapper drifts slightly against the
@@ -123,19 +163,24 @@ export default function CraftShowcase({ services }: { services: Service[] }) {
   return (
     <section id="craft" ref={rootRef} className={`chapter ${styles.craft}`}>
       <div className={`container ${styles.head}`}>
-        <p className={`chapter-mark ${styles.mark}`}>Chapter III · The Craft</p>
-        <h2 className={styles.title}>
-          <span className={styles.headLine}>
-            <span>Every treatment,</span>
-          </span>
-          <span className={styles.headLine}>
-            <span>a transformation.</span>
-          </span>
-        </h2>
-        <p className={styles.headMeta}>
-          Move across each study to bring the result into the light — or reveal
-          it in full. The same precision we bring to the chair.
-        </p>
+        <span className={styles.headNumeral} aria-hidden="true">
+          III
+        </span>
+        <div className={styles.headInner}>
+          <p className={`chapter-mark ${styles.mark}`}>Chapter III · The Craft</p>
+          <h2 className={styles.title}>
+            <span className={styles.headLine}>
+              <span>Every treatment,</span>
+            </span>
+            <span className={styles.headLine}>
+              <span>a transformation.</span>
+            </span>
+          </h2>
+          <p className={styles.headMeta}>
+            Move across each study to bring the result into the light — or
+            reveal it in full. The same precision we bring to the chair.
+          </p>
+        </div>
       </div>
 
       <div className={styles.rows}>
@@ -150,7 +195,10 @@ export default function CraftShowcase({ services }: { services: Service[] }) {
               </div>
             </div>
 
-            <div className={styles.info}>
+            <div
+              className={styles.info}
+              data-index={String(i + 1).padStart(2, "0")}
+            >
               <span className={styles.index}>
                 {String(i + 1).padStart(2, "0")}
               </span>
