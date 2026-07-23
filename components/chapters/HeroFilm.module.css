@@ -275,16 +275,36 @@
 }
 
 @media (max-width: 720px) {
+  /* Poster fallback follows the same centred framing the canvas now uses on
+     phones, so the crossfade to the painted canvas never jumps the subject. */
+  .poster {
+    object-position: 50% 44%;
+    transform: scale(0.98);
+  }
+
+  /* Beats drop into the lower negative space and centre, with comfortable
+     side gutters so lines always have breathing room. Vertical anchors use
+     svh so the mobile browser chrome never shoves a beat off-screen. Every
+     title box is bounded LEFT+RIGHT to the gutter and horizontally un-shifted
+     so no line can spill past the viewport edge; balanced wrapping keeps any
+     line that must break looking composed rather than orphaned. */
+  .b0 {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 34%;
+    width: auto;
+    translate: 0 -50%;
+  }
   .b1 {
     top: auto;
-    bottom: 24vh;
+    bottom: 26svh;
     left: var(--gutter);
     right: var(--gutter);
     text-align: center;
     max-width: none;
   }
   .b2 {
-    bottom: 20vh;
+    bottom: 21svh;
     text-align: center;
     left: var(--gutter);
     right: var(--gutter);
@@ -293,10 +313,91 @@
   .b2 .rule {
     margin-inline: auto;
   }
+  .b3 {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: 50%;
+    width: auto;
+    translate: 0 -50%;
+  }
   .b4 {
     left: var(--gutter);
     right: var(--gutter);
     text-align: center;
-    bottom: 20vh;
+    bottom: 22svh;
+  }
+
+  /* balance any forced wrap; guarantee the box, not the text, defines width */
+  .b0line,
+  .line,
+  .lineSm,
+  .climax {
+    text-wrap: balance;
+    max-width: 100%;
+  }
+}
+
+/* Small phones (≤430px): tighten the display scale so the one-line statements
+   ("Almost invisible.", "Shaped to disappear.", "Begin yours.") stay on a
+   single line, and the longer climax ("The Art of the Smile") resolves to a
+   clean, balanced two lines instead of overflowing the right edge. Sizes are
+   vw-led so they scale smoothly from 430 down to 320. */
+@media (max-width: 430px) {
+  .line {
+    font-size: clamp(1.9rem, 8.6vw, 2.7rem);
+    line-height: 1.02;
+  }
+  .lineSm {
+    font-size: clamp(1.5rem, 7.4vw, 2rem);
+    line-height: 1.05;
+  }
+  .climax {
+    font-size: clamp(2.1rem, 9.4vw, 3rem);
+    line-height: 1.04;
+  }
+  .b0line {
+    font-size: clamp(1.15rem, 5.4vw, 1.5rem);
+    line-height: 1.15;
+  }
+  .kicker {
+    font-size: 9px;
+    letter-spacing: 0.28em;
+  }
+  .b3 .kicker {
+    /* the wide-tracked kicker over the centred climax can otherwise crowd the
+       edges — keep it comfortably inside the gutter */
+    max-width: 100%;
+  }
+  /* keep the caption stack out of the bottom scrubber + reserve dock zone */
+  .b1 {
+    bottom: 28svh;
+  }
+  .b2 {
+    bottom: 23svh;
+  }
+  .b4 {
+    bottom: 24svh;
+  }
+  .filmMeta {
+    bottom: calc(3vh + 12px);
+  }
+}
+
+/* Narrowest phones (≤360px) — one more notch down so nothing crowds the 320px
+   edge; the short statements still hold a single line here. */
+@media (max-width: 360px) {
+  .line {
+    font-size: 7.9vw;
+  }
+  .lineSm {
+    font-size: 6.9vw;
+  }
+  .climax {
+    font-size: 8.6vw;
+  }
+  .kicker,
+  .b3 .kicker {
+    font-size: 8.4px;
+    letter-spacing: 0.22em;
   }
 }

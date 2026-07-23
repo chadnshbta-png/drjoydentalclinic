@@ -107,3 +107,28 @@
     transform: none;
   }
 }
+
+/* Small phones — keep the 2×2 ledger (impactful, not a plain list) with a
+   comfortable numeral size and vertical rhythm. */
+@media (max-width: 430px) {
+  .counters {
+    padding: clamp(84px, 13vh, 130px) 0 clamp(64px, 11vh, 120px);
+  }
+  .grid {
+    gap: clamp(32px, 8vw, 44px) clamp(20px, 6vw, 32px);
+  }
+  .num {
+    font-size: clamp(3rem, 15vw, 4.2rem);
+  }
+  .stat {
+    gap: 14px;
+  }
+  .label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    max-width: 16ch;
+  }
+  .title {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
+}

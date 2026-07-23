@@ -163,3 +163,36 @@
     margin-bottom: 26px;
   }
 }
+
+/* Small phones — tighten header + row rhythm and cap copy width for readable
+   measure without touching the desktop grid. */
+@media (max-width: 430px) {
+  .craft {
+    padding: clamp(84px, 12vh, 120px) 0;
+  }
+  .head {
+    margin-bottom: clamp(48px, 8vh, 72px);
+  }
+  .headMeta {
+    font-size: 1rem;
+  }
+  .rows {
+    gap: clamp(72px, 12vh, 110px);
+  }
+  .row,
+  .rowReverse {
+    gap: 22px;
+    width: 90vw;
+  }
+  .serviceTitle {
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+  }
+  .serviceCopy {
+    font-size: 1rem;
+    line-height: 1.72;
+    max-width: 100%;
+  }
+  .index {
+    margin-bottom: 20px;
+  }
+}

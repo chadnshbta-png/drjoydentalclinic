@@ -286,8 +286,102 @@
   }
 }
 
+/* ——— mobile timeline: a true connected vertical timeline ———
+   On phones the horizontal desktop row can't read, so we rebuild it as a
+   single rail running top-to-bottom with each milestone hung beside its bead.
+   A continuous gold hairline connects every stop, so it reads as one journey
+   — not scattered circles. Desktop (>560px) is untouched. */
 @media (max-width: 560px) {
   .timeline {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* consistent vertical padding so the rail aligns with first/last bead */
+    padding: clamp(44px, 8vh, 90px) 0 clamp(56px, 10vh, 120px) 6px;
+  }
+
+  /* the continuous rail — a single hairline down the bead column. It stops a
+     touch inside the first/last bead centres so the ends feel finished. */
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: calc(clamp(44px, 8vh, 90px) + 10px);
+    bottom: calc(clamp(56px, 10vh, 120px) + 8px);
+    width: 1px;
+    background: linear-gradient(
+      var(--gold) 0%,
+      rgba(172, 139, 81, 0.55) 55%,
+      rgba(172, 139, 81, 0.16) 100%
+    );
+  }
+
+  /* each stop: bead on the rail, content indented beside it */
+  .milestone {
+    padding: 0 0 clamp(30px, 5vh, 46px) clamp(30px, 8vw, 42px);
+    opacity: 0; /* GSAP fades it in */
+  }
+  .milestone:last-child {
+    padding-bottom: 0;
+  }
+
+  /* bead sits centred on the rail (rail x = 6px, bead is 13px wide) */
+  .tBead {
+    top: 4px;
+    left: 0;
+    width: 13px;
+    height: 13px;
+    background: var(--ivory);
+    box-shadow: 0 0 0 5px rgba(172, 139, 81, 0.08);
+  }
+
+  /* dated anchors (2004 / Today) read as gold heading labels */
+  .dated .tMarker {
+    font-size: 1.05rem;
+    line-height: 1;
+    margin-bottom: calc(var(--u) * 2.5);
+    color: var(--gold-deep);
+  }
+  /* undated stops: drop the orphaned "·" — the bead already marks the stop, so
+     the text starts clean and aligned with the dated rows */
+  .undated .tMarker {
+    display: none;
+  }
+
+  .tText {
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.82;
+    max-width: 40ch;
+  }
+}
+
+/* Small phones — centre the founder block, ease the ghost word so it never
+   forces overflow, and give the timeline items room to breathe. */
+@media (max-width: 430px) {
+  .founderWrap {
+    padding: clamp(96px, 15vh, 140px) 0 clamp(64px, 10vh, 100px);
+  }
+  .founderGrid {
+    gap: clamp(32px, 6vh, 48px);
+    justify-items: center;
+    text-align: center;
+  }
+  .founderQuote {
+    font-size: clamp(1.4rem, 7.2vw, 1.9rem);
+    max-width: 24ch;
+    margin-inline: auto;
+  }
+  .medallion {
+    justify-self: center;
+    width: clamp(200px, 58vw, 260px);
+  }
+  .bgWord {
+    font-size: clamp(8rem, 44vw, 12rem);
+    opacity: 0.9;
+  }
+  /* padding + rail geometry inherit from the ≤560px timeline redesign above */
+  .networkTitle {
+    font-size: clamp(1.5rem, 7vw, 2rem);
   }
 }

@@ -33,6 +33,22 @@ const ZOOM = 1.08;
 const BIAS_X = 0.38;
 const BIAS_Y = 0.3;
 
+// Mobile reframing. On a tall/narrow phone viewport the 16:9 film, scaled with
+// `cover`, fills the height and crops the sides to a thin over-zoomed strip —
+// the left-weighted subject drifts off and the composition breaks. On portrait
+// phones we instead pull the framing back (less zoom) and re-center it so the
+// subject and the shot's negative space both stay readable. Desktop keeps the
+// exact constants above — these only apply when the viewport is portrait-phone.
+// A gentle pull-back (< 1) shows more of the composition on a tall phone. The
+// stage/canvas background is the film's exact greige (HERO_BG), so the few
+// pixels of margin this leaves blend in invisibly — the subject simply sits a
+// little smaller and fully framed rather than filling and cropping the sides.
+const MOBILE_ZOOM = 0.98;
+const MOBILE_BIAS_X = 0.5; // centre the subject horizontally
+const MOBILE_BIAS_Y = 0.44; // sit a touch above centre, keep the arch in frame
+// Below this width AND in portrait we treat the stage as a phone.
+const MOBILE_MAX_W = 640;
+
 // The actual sparkle watermark, measured from the frames (center ≈ 0.906, 0.833,
 // ~0.037 × 0.063 of the frame). The erase box below is drawn generously larger
 // so the whole glow, not just the star, is always covered.
@@ -95,6 +111,13 @@ export default function HeroFilm() {
       resize();
       window.addEventListener("resize", resize);
 
+      // Portrait phone → gentler framing so the subject stays centred and the
+      // shot doesn't crop to an over-zoomed strip. Purely a paint-time choice;
+      // desktop is unaffected (wide/landscape viewports fail this test).
+      const isPhoneFraming = () =>
+        window.innerWidth <= MOBILE_MAX_W &&
+        window.innerHeight > window.innerWidth;
+
       const paint = (index: number) => {
         const frame = film.nearest(index);
         if (!frame) return;
@@ -102,11 +125,15 @@ export default function HeroFilm() {
         const ih = frame.height;
         const cw = canvas.width;
         const ch = canvas.height;
-        const scale = Math.max(cw / iw, ch / ih) * ZOOM;
+        const phone = isPhoneFraming();
+        const zoom = phone ? MOBILE_ZOOM : ZOOM;
+        const biasX = phone ? MOBILE_BIAS_X : BIAS_X;
+        const biasY = phone ? MOBILE_BIAS_Y : BIAS_Y;
+        const scale = Math.max(cw / iw, ch / ih) * zoom;
         const dw = iw * scale;
         const dh = ih * scale;
-        const dx = (cw - dw) * BIAS_X;
-        const dy = (ch - dh) * BIAS_Y;
+        const dx = (cw - dw) * biasX;
+        const dy = (ch - dh) * biasY;
         ctx.fillStyle = HERO_BG;
         ctx.fillRect(0, 0, cw, ch);
         ctx.drawImage(frame, dx, dy, dw, dh);

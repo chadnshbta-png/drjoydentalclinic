@@ -155,13 +155,24 @@ export default function People() {
       {/* ——— milestone timeline ——— */}
       <div className={`container ${styles.timeline}`}>
         <span className={styles.tLine} aria-hidden="true" />
-        {milestones.map((m, i) => (
-          <div key={i} className={styles.milestone}>
-            <span className={styles.tBead} aria-hidden="true" />
-            <span className={styles.tMarker}>{m.marker}</span>
-            <p className={styles.tText}>{m.text}</p>
-          </div>
-        ))}
+        {milestones.map((m, i) => {
+          // "·" marks an undated stop. On desktop it's a tiny dot on the rail;
+          // on mobile we tag it so CSS can hide the orphaned dot and let the
+          // bead alone mark the stop. Dated anchors (2004 / Today) keep a label.
+          const dated = m.marker !== "·";
+          return (
+            <div
+              key={i}
+              className={`${styles.milestone} ${dated ? styles.dated : styles.undated}`}
+            >
+              <span className={styles.tBead} aria-hidden="true" />
+              <span className={styles.tMarker} aria-hidden={!dated}>
+                {m.marker}
+              </span>
+              <p className={styles.tText}>{m.text}</p>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

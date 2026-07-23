@@ -231,4 +231,41 @@
   .phone {
     display: none;
   }
+  /* clear the notch, and keep the glass frame from hugging the edges */
+  .bar {
+    padding-top: max(calc(var(--u) * 3), env(safe-area-inset-top));
+  }
+  /* the chapter overlay scrolls if a short viewport can't hold all seven
+     chapters, and starts from the top rather than cropping the first items */
+  .overlay {
+    justify-content: flex-start;
+    padding-top: clamp(96px, 20vh, 160px);
+    padding-bottom: clamp(96px, 16vh, 140px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .item {
+    /* a touch smaller so all chapters breathe on a phone */
+    font-size: clamp(1.9rem, 8.4vw, 2.6rem);
+  }
+  .overlayFoot {
+    bottom: max(calc(var(--u) * 6), env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+  }
+}
+
+/* Small phones — comfortable menu-button target and logo scale. */
+@media (max-width: 430px) {
+  .glass {
+    padding: calc(var(--u) * 2.5) calc(var(--u) * 4);
+  }
+  .brand img {
+    width: 104px;
+  }
+  .menuBtn {
+    padding: 10px 16px; /* ≥40px tall */
+  }
+  .chapters {
+    gap: clamp(6px, 1.6vh, 14px);
+  }
 }

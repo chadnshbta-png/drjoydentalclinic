@@ -52,6 +52,10 @@ export const viewport: Viewport = {
   themeColor: "#FEFEFE",
   width: "device-width",
   initialScale: 1,
+  // Enables edge-to-edge rendering so env(safe-area-inset-*) resolves to real
+  // values on notched phones — the mobile chrome (dock, header, overlay) uses
+  // these to stay clear of the notch and home indicator. No effect on desktop.
+  viewportFit: "cover",
 };
 
 const jsonLd = {

@@ -418,3 +418,46 @@
     gap: 0;
   }
 }
+
+/* Small phones — a touch less visual height so controls sit higher, roomy
+   thumb targets on the choices, and a comfortable single-column plan. */
+@media (max-width: 430px) {
+  .smile {
+    grid-template-rows: 38vh auto;
+  }
+  .canvasCol {
+    order: 1;
+    min-height: 38vh;
+    padding: clamp(16px, 5vw, 32px);
+  }
+  .title {
+    font-size: clamp(1.55rem, 8vw, 2rem);
+  }
+  .question {
+    font-size: clamp(1.15rem, 6vw, 1.5rem);
+  }
+  .choice {
+    padding: 15px 18px; /* ≥48px tall — easy to tap */
+  }
+  .choiceText strong {
+    font-size: 1.1rem;
+  }
+  .condition {
+    font-size: clamp(1.4rem, 7vw, 1.9rem);
+  }
+  .treatment {
+    font-size: clamp(1.55rem, 7.6vw, 2.1rem);
+  }
+  .lede {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+  .resultCta {
+    gap: 16px;
+    width: 100%;
+  }
+  .resultCta :global(.btn-hairline) {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

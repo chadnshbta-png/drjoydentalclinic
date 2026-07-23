@@ -74,3 +74,23 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(0.7); }
 }
+
+/* Touch / phones — clear the home-indicator safe area, give the reveal links a
+   proper touch height, and keep the pill readable without shrinking it. */
+@media (max-width: 640px) {
+  .dock {
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    gap: calc(var(--u) * 2);
+  }
+  .actions a {
+    padding: 11px 18px; /* ≥44px tall */
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+  }
+  .pill {
+    font-size: 11.5px;
+    letter-spacing: 0.22em;
+    padding: 13px 22px;
+  }
+}

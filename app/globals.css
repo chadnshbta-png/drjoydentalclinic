@@ -190,3 +190,28 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ——— mobile / touch polish ———
+   Scoped to coarse pointers so desktop rendering is byte-for-byte unchanged.
+   A calm tap highlight, no accidental sideways scroll, and comfortable minimum
+   touch targets for the small text links throughout the story. */
+@media (hover: none) and (pointer: coarse) {
+  html,
+  body {
+    /* belt-and-braces against any single mispositioned element opening a
+       horizontal scrollbar on a narrow phone */
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  * {
+    /* replace the default grey flash with a soft brand-gold tap feedback */
+    -webkit-tap-highlight-color: rgba(172, 139, 81, 0.14);
+  }
+
+  /* inline story links (directions, phone, credits, footer) get a roomier hit
+     area without changing how they look */
+  a {
+    touch-action: manipulation;
+  }
+}

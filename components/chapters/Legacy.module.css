@@ -237,3 +237,47 @@
     width: 92vw;
   }
 }
+
+/* Small phones — the belief is the whole chapter, so give it a calm, balanced
+   rhythm: a comfortable size that holds each line on ONE line, generous space
+   between the two lines, and a numeral eased back to a soft texture behind. The
+   stage stays vertically centred so the composition never feels top-heavy. */
+@media (max-width: 430px) {
+  .stage {
+    width: min(90vw, 420px);
+    gap: clamp(20px, 3.4vh, 30px);
+  }
+  .belief {
+    font-size: clamp(1.75rem, 8vw, 2.4rem);
+    line-height: 1.12;
+    letter-spacing: 0.004em;
+  }
+  /* a clear breath between the two belief lines so "It is composed." lands as
+     its own quiet promise rather than crowding the line above it */
+  .l2 {
+    margin-top: clamp(6px, 1.4vh, 12px);
+  }
+  .numeral {
+    font-size: clamp(12rem, 66vw, 20rem);
+    opacity: 0.11;
+  }
+  .rule {
+    width: clamp(90px, 30vw, 150px);
+  }
+  .caption {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    gap: 9px;
+    text-align: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Narrowest phones — one notch smaller so both belief lines stay unbroken at
+   320px. */
+@media (max-width: 360px) {
+  .belief {
+    font-size: 7.6vw;
+  }
+}

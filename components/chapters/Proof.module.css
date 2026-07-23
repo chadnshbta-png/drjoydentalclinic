@@ -241,7 +241,9 @@
 /* ——— touch / small screens: vertical stack, no spotlight ——— */
 @media (max-width: 860px) {
   .stage {
-    padding: 24vh var(--gutter) 12vh;
+    /* stacked cards define the height — don't reserve a full desktop wall */
+    min-height: 0;
+    padding: clamp(96px, 16vh, 150px) var(--gutter) clamp(56px, 10vh, 96px);
   }
   .intro {
     position: relative;
@@ -265,5 +267,31 @@
   .quote {
     -webkit-line-clamp: 20;
     line-clamp: 20;
+  }
+}
+
+/* Small phones — comfortable card padding + readable quote size. */
+@media (max-width: 430px) {
+  .card {
+    padding: 22px 20px;
+  }
+  .introTitle {
+    font-size: clamp(1.7rem, 8vw, 2.1rem);
+    max-width: 18ch;
+  }
+  .quote {
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+  .quoteMark {
+    font-size: 3rem;
+    left: 12px;
+  }
+  .foot {
+    gap: 10px;
+  }
+  .marquee .track span {
+    font-size: 11px;
+    letter-spacing: 0.3em;
   }
 }
